@@ -3,210 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BarberShop Запись</title>
+    <title>BarberShop Premium</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Основные стили для тёмной темы, используем переменные Telegram для адаптивности */
         :root {
-            --bg-color: #111111; /* Глубокий черный фон */
-            --text-color: #f5f5f5; /* Светло-серый текст для чтения */
-            --accent-color: #e0b0ff; /* Акцентный цвет (светло-лавандовый) */
-            --secondary-bg-color: #1a1a1a; /* Чуть светлее для блоков */
-            --border-color: #333333;
+            --bg-color: #000000; /* Глубокий черный */
+            --card-bg: #121212; /* Цвет карточек */
+            --accent-color: #ffffff; /* Белый акцент */
+            --text-main: #ffffff;
+            --text-secondary: #888888;
+            --button-bg: #ffffff;
+            --button-text: #000000;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--tg-theme-bg-color, var(--bg-color));
-            color: var(--tg-theme-text-color, var(--text-color));
+            font-family: -apple-system, system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             margin: 0;
             padding: 20px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            overflow-x: hidden;
+            min-height: 100vh;
         }
 
         h2 {
-            color: var(--tg-theme-accent-text-color, var(--accent-color));
-            margin-bottom: 25px;
-            font-weight: 600;
             text-align: center;
+            font-size: 24px;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
-        /* Стили для карточки с полями выбора */
-        .booking-card {
-            background-color: var(--tg-theme-secondary-bg-color, var(--secondary-bg-color));
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
+        .form-group {
+            background: var(--card-bg);
             padding: 20px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            margin-bottom: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #222;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            color: #aaaaaa;
-        }
-
-        /* Стили для выпадающих списков и поля даты */
-        select, input[type="datetime-local"] {
-            width: 100%;
-            padding: 12px 15px;
-            margin-bottom: 18px;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            background-color: #222222; /* Фон полей */
-            color: var(--text-color);
-            font-size: 16px;
-            box-sizing: border-box; /* Чтобы padding не влиял на ширину */
-            appearance: none; /* Убираем стандартную стрелку select */
-        }
-
-        /* Добавляем свою стрелку для select */
-        .select-wrapper {
-            position: relative;
-        }
-        .select-wrapper::after {
-            content: '▼';
+            margin-bottom: 10px;
             font-size: 12px;
-            color: #666;
-            position: absolute;
-            right: 15px;
-            top: 15px;
-            pointer-events: none;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-            filter: invert(1); /* Делаем иконку календаря белой */
-        }
-
-        /* Стили для главной кнопки */
-        .submit-btn {
+        select, input {
             width: 100%;
-            max-width: 400px;
-            padding: 16px;
-            background-color: var(--tg-theme-button-color, #e0b0ff); /* Цвет кнопки из темы или лавандовый */
-            color: var(--tg-theme-button-text-color, #111111); /* Текст кнопки */
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 12px;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .submit-btn {
+            margin-top: auto;
+            width: 100%;
+            padding: 18px;
+            background: var(--button-bg);
+            color: var(--button-text);
             border: none;
             border-radius: 12px;
-            font-size: 17px;
-            font-weight: 600;
+            font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-            box-shadow: 0 4px 10px rgba(224, 176, 255, 0.3);
+            transition: 0.3s;
         }
 
         .submit-btn:active {
-            transform: scale(0.98); /* Эффект нажатия */
-            background-color: #d19bed;
+            transform: scale(0.96);
+            opacity: 0.8;
         }
 
-        .submit-btn:disabled {
-            background-color: #555555;
-            color: #888888;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        /* Небольшое пояснение снизу */
-        .hint {
-            font-size: 12px;
-            color: #666666;
-            text-align: center;
-            margin-top: 10px;
-            max-width: 300px;
+        /* Стиль для календаря (инверсия иконок в темной теме) */
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
         }
     </style>
 </head>
 <body>
 
-    <h2>✂️ Онлайн-запись</h2>
+    <h2>Бронирование</h2>
     
-    <div class="booking-card">
-        <label for="service">Выберите услугу</label>
-        <div class="select-wrapper">
-            <select id="service">
-                <option value="Мужская стрижка">Мужская стрижка — 8 000 ₸</option>
-                <option value="Стрижка бороды">Оформление бороды — 5 000 ₸</option>
-                <option value="Стрижка + Борода">Комплекс (Стрижка+Борода) — 12 000 ₸</option>
-                <option value="Детская стрижка">Детская стрижка — 6 000 ₸</option>
-            </select>
-        </div>
-
-        <label for="master">Выберите мастера</label>
-        <div class="select-wrapper">
-            <select id="master">
-                <option value="Александр">Александр (Топ-мастер)</option>
-                <option value="Дмитрий">Дмитрий (Барбер)</option>
-                <option value="Артем">Артем (Младший барбер)</option>
-            </select>
-        </div>
-
-        <label for="datetime">Дата и время</label>
-        <input type="datetime-local" id="datetime" required>
+    <div class="form-group">
+        <label>Услуга</label>
+        <select id="service">
+            <option value="Мужская стрижка">Мужская стрижка — 8 000 ₸</option>
+            <option value="Стрижка бороды">Стрижка бороды — 5 000 ₸</option>
+            <option value="Комплекс">Стрижка + Борода — 11 000 ₸</option>
+            <option value="Окрашивание">Окрашивание — 10 000 ₸</option>
+        </select>
     </div>
 
-    <button class="submit-btn" id="send_data_btn">Подтвердить запись</button>
-    
-    <p class="hint">Данные будут мгновенно отправлены в чат с ботом для подтверждения.</p>
+    <div class="form-group">
+        <label>Мастер</label>
+        <select id="master">
+            <option value="Александр">Александр (Top Master)</option>
+            <option value="Дмитрий">Дмитрий (Barber)</option>
+            <option value="Арман">Арман (Junior)</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Дата и время</label>
+        <input type="datetime-local" id="datetime">
+    </div>
+
+    <button class="submit-btn" id="main_button">ЗАПИСАТЬСЯ</button>
 
     <script>
-        // Инициализация Telegram Web App API
         const tg = window.Telegram.WebApp;
-        
-        // Расширяем приложение на всю доступную высоту
         tg.expand();
+        tg.enableClosingConfirmation(); // Подтверждение закрытия
 
-        // Устанавливаем цвет заголовка и фона самого приложения Telegram (сверху)
-        tg.setHeaderColor('secondary_bg_color');
-        tg.setBackgroundColor('bg_color');
+        const btn = document.getElementById('main_button');
 
-        const btn = document.getElementById('send_data_btn');
-        const datetimeInput = document.getElementById('datetime');
-
-        // Функция проверки заполнения даты
-        function checkInputs() {
-            if (datetimeInput.value) {
-                btn.disabled = false;
-            } else {
-                btn.disabled = true;
-            }
-        }
-
-        // Следим за изменениями в поле даты
-        datetimeInput.addEventListener('input', checkInputs);
-        // Изначально кнопка отключена
-        checkInputs();
-
-        // Основная логика отправки данных при нажатии кнопки
         btn.addEventListener('click', () => {
-            const serviceInput = document.getElementById('service');
-            const masterInput = document.getElementById('master');
+            const service = document.getElementById('service').value;
+            const master = document.getElementById('master').value;
+            const datetime = document.getElementById('datetime').value;
 
-            const serviceText = serviceInput.options[serviceInput.selectedIndex].text;
-            const masterName = masterInput.value;
-            const datetimeValue = datetimeInput.value;
+            if (!datetime) {
+                tg.showAlert("Пожалуйста, выберите дату и время!");
+                return;
+            }
 
-            // Форматируем дату для удобного чтения (убираем 'T')
-            const formattedDate = datetimeValue.replace('T', ' ');
-
-            // Формируем объект с данными
-            const dataToBot = {
-                service: serviceText,
-                master: masterName,
-                date: formattedDate
+            // Данные для отправки боту
+            const data = {
+                service: service,
+                master: master,
+                date: datetime.replace('T', ' ')
             };
 
-            // ОТПРАВКА ДАННЫХ В БОТ (в виде JSON-строки)
-            tg.sendData(JSON.stringify(dataToBot));
-            
-            // Закрываем мини-приложение после отправки
+            // Отправляем данные в чат бота
+            tg.sendData(JSON.stringify(data));
             tg.close();
         });
     </script>
