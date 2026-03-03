@@ -1,156 +1,65 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BarberShop Premium</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --bg-color: #000000; /* Глубокий черный */
-            --card-bg: #121212; /* Цвет карточек */
-            --accent-color: #ffffff; /* Белый акцент */
-            --text-main: #ffffff;
-            --text-secondary: #888888;
-            --button-bg: #ffffff;
-            --button-text: #000000;
-        }
+import asyncio
+import json
+import logging
+from aiogram import Bot, Dispatcher, F, types
+from aiogram.filters import CommandStart
 
-        body {
-            font-family: -apple-system, system-ui, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+# ВАШ ТОКЕН (уже вставлен)
+TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y"
 
-        h2 {
-            text-align: center;
-            font-size: 24px;
-            margin-bottom: 30px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
+# Настройка логирования, чтобы видеть ошибки в консоли
+logging.basicConfig(level=logging.INFO)
 
-        .form-group {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            border: 1px solid #222;
-        }
+bot = Bot(token=TOKEN)
+dp = Dispatcher()
 
-        label {
-            display: block;
-            margin-bottom: 10px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+# 1. ОБРАБОТКА КОМАНДЫ /START
+@dp.message(CommandStart())
+async def start_cmd(message: types.Message):
+    await message.answer(
+        f"Привет, {message.from_user.first_name}! 💈\n\n"
+        "Добро пожаловать в наш BarberShop.\n"
+        "Чтобы записаться на стрижку, нажмите на синюю кнопку меню слева («zapic»)."
+    )
 
-        select, input {
-            width: 100%;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            padding: 12px;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 16px;
-            outline: none;
-            box-sizing: border-box;
-        }
+# 2. ОБРАБОТКА ДАННЫХ ИЗ ВЕБ-ПРИЛОЖЕНИЯ (Mini App)
+# Этот блок кода отвечает за то, чтобы бот "увидел" нажатие кнопки на сайте
+@dp.message(F.content_type == "web_app_data")
+async def handle_webapp_data(message: types.Message):
+    try:
+        # Извлекаем JSON данные, которые прислал ваш HTML-сайт на GitHub
+        data = json.loads(message.web_app_data.data) 
+        
+        service = data.get('service', 'Не указана')
+        master = data.get('master', 'Не выбран')
+        date = data.get('date', 'Не указано')
 
-        select:focus, input:focus {
-            border-color: var(--accent-color);
-        }
+        # Формируем красивый ответ клиенту
+        response = (
+            f"✅ **ЗАПИСЬ ПОДТВЕРЖДЕНА!**\n"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"✂️ **Услуга:** {service}\n"
+            f"👤 **Мастер:** {master}\n"
+            f"📅 **Дата/Время:** {date}\n"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"Ждем вас по адресу: пр. Абая, 10 (пример)\n"
+            f"Приятного дня!"
+        )
+        
+        # Отправляем подтверждение в чат
+        await message.answer(response, parse_mode="Markdown")
+        
+    except Exception as e:
+        # Если что-то пошло не так (например, неверный формат данных)
+        await message.answer(f"Произошла ошибка при обработке данных: {e}")
 
-        .submit-btn {
-            margin-top: auto;
-            width: 100%;
-            padding: 18px;
-            background: var(--button-bg);
-            color: var(--button-text);
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
+# 3. ЗАПУСК БОТА
+async def main():
+    print("--- Бот запущен и работает! ---")
+    await dp.start_polling(bot)
 
-        .submit-btn:active {
-            transform: scale(0.96);
-            opacity: 0.8;
-        }
-
-        /* Стиль для календаря (инверсия иконок в темной теме) */
-        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-        }
-    </style>
-</head>
-<body>
-
-    <h2>Бронирование</h2>
-    
-    <div class="form-group">
-        <label>Услуга</label>
-        <select id="service">
-            <option value="Мужская стрижка">Мужская стрижка — 8 000 ₸</option>
-            <option value="Стрижка бороды">Стрижка бороды — 5 000 ₸</option>
-            <option value="Комплекс">Стрижка + Борода — 11 000 ₸</option>
-            <option value="Окрашивание">Окрашивание — 10 000 ₸</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label>Мастер</label>
-        <select id="master">
-            <option value="Александр">Александр (Top Master)</option>
-            <option value="Дмитрий">Дмитрий (Barber)</option>
-            <option value="Арман">Арман (Junior)</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label>Дата и время</label>
-        <input type="datetime-local" id="datetime">
-    </div>
-
-    <button class="submit-btn" id="main_button">ЗАПИСАТЬСЯ</button>
-
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.enableClosingConfirmation(); // Подтверждение закрытия
-
-        const btn = document.getElementById('main_button');
-
-        btn.addEventListener('click', () => {
-            const service = document.getElementById('service').value;
-            const master = document.getElementById('master').value;
-            const datetime = document.getElementById('datetime').value;
-
-            if (!datetime) {
-                tg.showAlert("Пожалуйста, выберите дату и время!");
-                return;
-            }
-
-            // Данные для отправки боту
-            const data = {
-                service: service,
-                master: master,
-                date: datetime.replace('T', ' ')
-            };
-
-            // Отправляем данные в чат бота
-            tg.sendData(JSON.stringify(data));
-            tg.close();
-        });
-    </script>
-</body>
-</html>
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, SystemExit):
+        print("Бот остановлен")
