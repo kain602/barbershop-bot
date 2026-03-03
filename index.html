@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система записи - Дипломный проект</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        /* Стиль оформления: используем переменные Telegram, чтобы сайт подстраивался под тему мессенджера */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #222222);
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        h2 { text-align: center; color: var(--tg-theme-button-color, #3390ec); }
+
+        .form-group {
+            background: var(--tg-theme-secondary-bg-color, #f4f4f5);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px; }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box; /* Чтобы отступы не распирали элементы */
+            background: white;
+            color: black;
+        }
+
+        #submit_btn {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--tg-theme-button-color, #3390ec);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        #submit_btn:active { opacity: 0.7; }
+
+        .hint { font-size: 12px; text-align: center; color: gray; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Бронирование услуг</h2>
+    
+    <div class="form-group">
+        <label for="service">Услуга:</label>
+        <select id="service">
+            <option value="Мужская стрижка">Мужская стрижка — 1200₽</option>
+            <option value="Стрижка бороды">Оформление бороды — 800₽</option>
+            <option value="Маникюр">Маникюр (классика) — 1500₽</option>
+            <option value="Педикюр">Педикюр — 2000₽</option>
+        </select>
+
+        <label for="master">Мастер:</label>
+        <select id="master">
+            <option value="Александр">Александр (Топ-мастер)</option>
+            <option value="Мария">Мария (Ведущий стилист)</option>
+            <option value="Дмитрий">Дмитрий (Барбер)</option>
+        </select>
+
+        <label for="date">Дата и время:</label>
+        <input type="datetime-local" id="date">
+    </div>
+
+    <button id="submit_btn">ЗАПИСАТЬСЯ</button>
+    <p class="hint">Данные будут мгновенно отправлены в чат с ботом</p>
+</div>
+
+<script>
+    // Инициализация объекта Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    
+    // Сообщаем Telegram, что приложение готово и его можно показать
+    tg.ready();
+    tg.expand(); // Расширяем на весь экран телефона
+
+    const mainButton = document.getElementById('submit_btn');
+
+    // Обработка нажатия на кнопку
+    mainButton.addEventListener('click', () => {
+        const service = document.getElementById('service').value;
+        const master = document.getElementById('master').value;
+        const date = document.getElementById('date').value;
+
+        // Валидация: проверяем, выбрал ли пользователь дату
+        if (!date) {
+            tg.showAlert("Пожалуйста, выберите дату и время визита!");
+            return;
+        }
+
+        // Собираем данные в объект (словарь)
+        const data = {
+            service: service,
+            master: master,
+            date: date
+        };
+
+        // Отправляем данные боту (ВАЖНО: данные должны быть строкой JSON)
+        tg.sendData(JSON.stringify(data));
+        
+        // Закрываем окно Mini App
+        tg.close();
+    });
+</script>
+
+</body>
+</html>
