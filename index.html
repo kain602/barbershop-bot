@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barber Booking</title>
+    <title>Barber Booking KZ</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: #ffffff; display: flex; flex-direction: column; align-items: center; padding: 20px; }
@@ -14,15 +14,17 @@
         input:focus { border-color: #0088cc; outline: none; }
         button { width: 100%; padding: 15px; margin-top: 25px; border-radius: 10px; border: none; background: #0088cc; color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:hover { background: #00aaff; transform: scale(1.02); }
+        .error-hint { color: #ff4444; font-size: 12px; margin-top: 5px; display: none; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>Запись к мастеру</h2>
+        <h2>Запись (Казахстан)</h2>
         
-        <label>Ваш номер телефона</label>
-        <input type="tel" id="phone" value="+7 ">
+        <label>Ваш номер телефона (KZ)</label>
+        <input type="tel" id="phone" value="+7 7" maxlength="16">
+        <div id="phone-error" class="error-hint">Пожалуйста, введите полный номер телефона</div>
 
         <label>Выберите услугу:</label>
         <select id="service">
@@ -44,44 +46,56 @@
         const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y";
         const ADMIN_ID = "1384228457";
 
-        // Логика для фиксации +7 в поле ввода
         const phoneInput = document.getElementById('phone');
+        const phoneError = document.getElementById('phone-error');
+
+        // Принудительно держим "+7 7" в начале
         phoneInput.addEventListener('input', function (e) {
-            if (!e.target.value.startsWith('+7 ')) {
-                e.target.value = '+7 ';
+            if (!e.target.value.startsWith('+7 7')) {
+                e.target.value = '+7 7';
             }
+            // Убираем подсказку об ошибке, когда пользователь начинает печатать
+            phoneError.style.display = 'none';
         });
 
         async function sendOrder() {
-            const phone = phoneInput.value;
+            const phone = phoneInput.value.trim();
             const service = document.getElementById('service').value;
             const datetime = document.getElementById('datetime').value;
 
             const userId = tg.initDataUnsafe?.user?.id;
             const userName = tg.initDataUnsafe?.user?.first_name || "Клиент";
 
-            // Проверка длины (минимум +7 и 10 цифр)
-            if (phone.length < 12) {
-                alert("Введите полный номер телефона!");
-                return;
-            }
-            if (!datetime) {
-                alert("Выберите дату!");
+            // ПРОВЕРКА НОМЕРА: +7 7XX XXX XX XX (должно быть минимум 12 символов с пробелами или без)
+            // Казахстанский номер: +7 (код 7) + 9 цифр. Итого минимум 11 цифр + плюс.
+            if (phone.replace(/\D/g, '').length < 11) {
+                phoneError.style.display = 'block';
+                phoneInput.focus();
                 return;
             }
 
-            const clientMessage = `<b>✅ ЗАПИСЬ ОФОРМЛЕНА!</b>\n\n✂️ Услуга: ${service}\n📅 Время: ${datetime.replace('T', ' ')}\n📞 Тел: ${phone}`;
-            const adminMessage = `<b>🚀 НОВАЯ ЗАПИСЬ!</b>\n━━━━━━━━━━━━━\n👤 <b>Имя:</b> ${userName}\n📞 <b>Телефон:</b> <code>${phone}</code>\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${datetime.replace('T', ' ')}`;
+            if (!datetime) {
+                alert("Пожалуйста, выберите дату и время!");
+                return;
+            }
+
+            if (!userId) {
+                alert("Зайдите через официальный бот Telegram!");
+                return;
+            }
+
+            const clientMessage = `<b>✅ ЗАПИСЬ ПРИНЯТА!</b>\n\n📞 Тел: ${phone}\n✂️ Услуга: ${service}\n📅 Когда: ${datetime.replace('T', ' ')}`;
+            const adminMessage = `<b>🇰🇿 НОВАЯ ЗАПИСЬ (KZ)</b>\n━━━━━━━━━━━━━\n👤 <b>Клиент:</b> ${userName}\n📞 <b>Телефон:</b> <code>${phone}</code>\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${datetime.replace('T', ' ')}`;
 
             try {
-                // Отправка клиенту
+                // 1. Сообщение клиенту
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: userId, text: clientMessage, parse_mode: 'HTML' })
                 });
 
-                // Отправка тебе
+                // 2. Сообщение тебе (админу)
                 if (String(userId) !== ADMIN_ID) {
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                         method: 'POST',
@@ -90,10 +104,12 @@
                     });
                 }
 
-                alert("Готово!");
-                tg.close();
+                tg.showConfirm("Запись успешно отправлена!", () => {
+                    tg.close();
+                });
+                
             } catch (e) {
-                alert("Ошибка отправки.");
+                alert("Ошибка соединения. Проверьте интернет.");
             }
         }
     </script>
