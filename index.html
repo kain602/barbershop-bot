@@ -14,7 +14,6 @@
         input:focus { border-color: #0088cc; outline: none; }
         button { width: 100%; padding: 15px; margin-top: 25px; border-radius: 10px; border: none; background: #0088cc; color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:hover { background: #00aaff; transform: scale(1.02); }
-        .required { color: #ff4444; }
     </style>
 </head>
 <body>
@@ -22,20 +21,14 @@
     <div class="container">
         <h2>Запись к мастеру</h2>
         
-        <label>Ваш номер телефона <span class="required">*</span></label>
-        <input type="tel" id="phone" placeholder="+7 (999) 000-00-00" required>
+        <label>Ваш номер телефона</label>
+        <input type="tel" id="phone" value="+7 ">
 
         <label>Выберите услугу:</label>
         <select id="service">
             <option value="Мужская стрижка">Мужская стрижка</option>
             <option value="Стрижка бороды">Стрижка бороды</option>
             <option value="Комплекс">Комплекс</option>
-        </select>
-
-        <label>Мастер:</label>
-        <select id="master">
-            <option value="Алексей">Алексей</option>
-            <option value="Дмитрий">Дмитрий</option>
         </select>
 
         <label>Дата и время:</label>
@@ -49,48 +42,47 @@
         tg.expand();
 
         const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y";
-        const ADMIN_ID = "1384228457"; // Твой ID
+        const ADMIN_ID = "1384228457";
+
+        // Логика для фиксации +7 в поле ввода
+        const phoneInput = document.getElementById('phone');
+        phoneInput.addEventListener('input', function (e) {
+            if (!e.target.value.startsWith('+7 ')) {
+                e.target.value = '+7 ';
+            }
+        });
 
         async function sendOrder() {
-            const phone = document.getElementById('phone').value;
+            const phone = phoneInput.value;
             const service = document.getElementById('service').value;
-            const master = document.getElementById('master').value;
             const datetime = document.getElementById('datetime').value;
 
-            // Данные текущего пользователя
             const userId = tg.initDataUnsafe?.user?.id;
             const userName = tg.initDataUnsafe?.user?.first_name || "Клиент";
 
-            // Проверки
-            if (!phone || phone.length < 5) {
-                alert("Пожалуйста, введите корректный номер телефона!");
+            // Проверка длины (минимум +7 и 10 цифр)
+            if (phone.length < 12) {
+                alert("Введите полный номер телефона!");
                 return;
             }
             if (!datetime) {
-                alert("Пожалуйста, выберите дату и время!");
-                return;
-            }
-            if (!userId) {
-                alert("Ошибка: Зайдите через бота!");
+                alert("Выберите дату!");
                 return;
             }
 
-            // Текст для КЛИЕНТА
-            const clientMessage = `<b>✅ ВЫ ЗАПИСАНЫ!</b>\n\n✂️ Услуга: ${service}\n👤 Мастер: ${master}\n📅 Время: ${datetime.replace('T', ' ')}\n📞 Ваш номер: ${phone}`;
-            
-            // Текст для ТЕБЯ (Админа) — здесь теперь виден номер!
-            const adminMessage = `<b>🚀 НОВАЯ ЗАПИСЬ!</b>\n━━━━━━━━━━━━━\n👤 <b>Имя:</b> ${userName}\n📞 <b>Телефон:</b> <code>${phone}</code>\n✂️ <b>Услуга:</b> ${service}\n👤 <b>Мастер:</b> ${master}\n📅 <b>Время:</b> ${datetime.replace('T', ' ')}\n🆔 <b>ID:</b> ${userId}`;
+            const clientMessage = `<b>✅ ЗАПИСЬ ОФОРМЛЕНА!</b>\n\n✂️ Услуга: ${service}\n📅 Время: ${datetime.replace('T', ' ')}\n📞 Тел: ${phone}`;
+            const adminMessage = `<b>🚀 НОВАЯ ЗАПИСЬ!</b>\n━━━━━━━━━━━━━\n👤 <b>Имя:</b> ${userName}\n📞 <b>Телефон:</b> <code>${phone}</code>\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${datetime.replace('T', ' ')}`;
 
             try {
-                // 1. Отправка клиенту
+                // Отправка клиенту
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: userId, text: clientMessage, parse_mode: 'HTML' })
                 });
 
-                // 2. Отправка Админу (тебе)
-                if (String(userId) !== String(ADMIN_ID)) {
+                // Отправка тебе
+                if (String(userId) !== ADMIN_ID) {
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -98,10 +90,10 @@
                     });
                 }
 
-                alert("Готово! Мы получили вашу запись.");
+                alert("Готово!");
                 tg.close();
             } catch (e) {
-                alert("Ошибка при отправке. Попробуйте снова.");
+                alert("Ошибка отправки.");
             }
         }
     </script>
