@@ -8,19 +8,24 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: #ffffff; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .container { background: #1e1e1e; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 350px; }
-        h2 { text-align: center; color: #0088cc; }
-        label { display: block; margin-top: 15px; font-size: 14px; color: #aaa; }
-        select, input { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #333; background: #2b2b2b; color: white; box-sizing: border-box; }
+        h2 { text-align: center; color: #0088cc; margin-bottom: 20px; }
+        label { display: block; margin-top: 15px; font-size: 14px; color: #aaa; text-align: left; width: 100%; }
+        select, input { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #333; background: #2b2b2b; color: white; box-sizing: border-box; font-size: 16px; }
+        input:focus { border-color: #0088cc; outline: none; }
         button { width: 100%; padding: 15px; margin-top: 25px; border-radius: 10px; border: none; background: #0088cc; color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:hover { background: #00aaff; transform: scale(1.02); }
+        .required { color: #ff4444; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>Запись в Барбершоп</h2>
+        <h2>Запись к мастеру</h2>
         
-        <label>Услуга:</label>
+        <label>Ваш номер телефона <span class="required">*</span></label>
+        <input type="tel" id="phone" placeholder="+7 (999) 000-00-00" required>
+
+        <label>Выберите услугу:</label>
         <select id="service">
             <option value="Мужская стрижка">Мужская стрижка</option>
             <option value="Стрижка бороды">Стрижка бороды</option>
@@ -44,53 +49,59 @@
         tg.expand();
 
         const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y";
-        const ADMIN_ID = "1384228457"; // Твой ID, чтобы ты видел все записи
-
-        async function sendToTelegram(chatId, text) {
-            return fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: chatId,
-                    text: text,
-                    parse_mode: 'HTML'
-                })
-            });
-        }
+        const ADMIN_ID = "1384228457"; // Твой ID
 
         async function sendOrder() {
+            const phone = document.getElementById('phone').value;
             const service = document.getElementById('service').value;
             const master = document.getElementById('master').value;
             const datetime = document.getElementById('datetime').value;
 
-            // ID того человека, который нажал на кнопку
+            // Данные текущего пользователя
             const userId = tg.initDataUnsafe?.user?.id;
             const userName = tg.initDataUnsafe?.user?.first_name || "Клиент";
 
+            // Проверки
+            if (!phone || phone.length < 5) {
+                alert("Пожалуйста, введите корректный номер телефона!");
+                return;
+            }
             if (!datetime) {
                 alert("Пожалуйста, выберите дату и время!");
                 return;
             }
-
             if (!userId) {
-                alert("Ошибка: Зайдите через Telegram бота!");
+                alert("Ошибка: Зайдите через бота!");
                 return;
             }
 
-            const clientMessage = `<b>✅ ВЫ ЗАПИСАНЫ!</b>\n\n✂️ Услуга: ${service}\n👤 Мастер: ${master}\n📅 Время: ${datetime.replace('T', ' ')}`;
-            const adminMessage = `<b>🚀 НОВАЯ ЗАПИСЬ!</b>\n\n👤 Клиент: ${userName} (ID: ${userId})\n✂️ Услуга: ${service}\n👤 Мастер: ${master}\n📅 Время: ${datetime.replace('T', ' ')}`;
+            // Текст для КЛИЕНТА
+            const clientMessage = `<b>✅ ВЫ ЗАПИСАНЫ!</b>\n\n✂️ Услуга: ${service}\n👤 Мастер: ${master}\n📅 Время: ${datetime.replace('T', ' ')}\n📞 Ваш номер: ${phone}`;
+            
+            // Текст для ТЕБЯ (Админа) — здесь теперь виден номер!
+            const adminMessage = `<b>🚀 НОВАЯ ЗАПИСЬ!</b>\n━━━━━━━━━━━━━\n👤 <b>Имя:</b> ${userName}\n📞 <b>Телефон:</b> <code>${phone}</code>\n✂️ <b>Услуга:</b> ${service}\n👤 <b>Мастер:</b> ${master}\n📅 <b>Время:</b> ${datetime.replace('T', ' ')}\n🆔 <b>ID:</b> ${userId}`;
 
             try {
-                // 1. Отправляем клиенту
-                await sendToTelegram(userId, clientMessage);
-                
-                // 2. Отправляем тебе (админу)
-                await sendToTelegram(ADMIN_ID, adminMessage);
+                // 1. Отправка клиенту
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: userId, text: clientMessage, parse_mode: 'HTML' })
+                });
 
-                alert("Запись оформлена! Проверьте сообщения от бота.");
+                // 2. Отправка Админу (тебе)
+                if (String(userId) !== String(ADMIN_ID)) {
+                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ chat_id: ADMIN_ID, text: adminMessage, parse_mode: 'HTML' })
+                    });
+                }
+
+                alert("Готово! Мы получили вашу запись.");
                 tg.close();
             } catch (e) {
-                alert("Произошла ошибка при отправке.");
+                alert("Ошибка при отправке. Попробуйте снова.");
             }
         }
     </script>
