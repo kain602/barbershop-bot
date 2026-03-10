@@ -12,31 +12,37 @@
         label { display: block; margin-top: 15px; font-size: 14px; color: #aaa; text-align: left; width: 100%; }
         select, input { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #333; background: #2b2b2b; color: white; box-sizing: border-box; font-size: 16px; }
         input:focus { border-color: #0088cc; outline: none; }
-        button { width: 100%; padding: 15px; margin-top: 25px; border-radius: 10px; border: none; background: #0088cc; color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button { width: 100%; padding: 15px; margin-top: 25px; border-radius: 10px; border: none; background: #0088cc; color: white; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:hover { background: #00aaff; transform: scale(1.02); }
+        .price-list { margin-top: 20px; font-size: 13px; color: #888; text-align: left; width: 100%; border-top: 1px solid #333; padding-top: 10px; }
         .error-hint { color: #ff4444; font-size: 12px; margin-top: 5px; display: none; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>Запись (Казахстан)</h2>
+        <h2>BarberShop KZ</h2>
         
-        <label>Ваш номер телефона (KZ)</label>
+        <label>Ваш номер телефона</label>
         <input type="tel" id="phone" value="+7 7" maxlength="16">
-        <div id="phone-error" class="error-hint">Пожалуйста, введите полный номер телефона</div>
+        <div id="phone-error" class="error-hint">Введите полный номер (+7 7XX...)</div>
 
-        <label>Выберите услугу:</label>
+        <label>Выберите услугу и цену:</label>
         <select id="service">
-            <option value="Мужская стрижка">Мужская стрижка</option>
-            <option value="Стрижка бороды">Стрижка бороды</option>
-            <option value="Комплекс">Комплекс</option>
+            <option value="Мужская стрижка (4000 ₸)">Мужская стрижка — 4 000 ₸</option>
+            <option value="Стрижка бороды (2500 ₸)">Стрижка бороды — 2 500 ₸</option>
+            <option value="Комплекс (6000 ₸)">Комплекс (Стрижка + Борода) — 6 000 ₸</option>
+            <option value="Детская стрижка (3000 ₸)">Детская стрижка — 3 000 ₸</option>
         </select>
 
         <label>Дата и время:</label>
         <input type="datetime-local" id="datetime">
 
         <button onclick="sendOrder()">ЗАПИСАТЬСЯ</button>
+
+        <div class="price-list">
+            * Оплата производится на месте после услуги.
+        </div>
     </div>
 
     <script>
@@ -49,12 +55,11 @@
         const phoneInput = document.getElementById('phone');
         const phoneError = document.getElementById('phone-error');
 
-        // Принудительно держим "+7 7" в начале
+        // Принудительный формат +7 7
         phoneInput.addEventListener('input', function (e) {
             if (!e.target.value.startsWith('+7 7')) {
                 e.target.value = '+7 7';
             }
-            // Убираем подсказку об ошибке, когда пользователь начинает печатать
             phoneError.style.display = 'none';
         });
 
@@ -66,8 +71,7 @@
             const userId = tg.initDataUnsafe?.user?.id;
             const userName = tg.initDataUnsafe?.user?.first_name || "Клиент";
 
-            // ПРОВЕРКА НОМЕРА: +7 7XX XXX XX XX (должно быть минимум 12 символов с пробелами или без)
-            // Казахстанский номер: +7 (код 7) + 9 цифр. Итого минимум 11 цифр + плюс.
+            // Валидация
             if (phone.replace(/\D/g, '').length < 11) {
                 phoneError.style.display = 'block';
                 phoneInput.focus();
@@ -75,27 +79,22 @@
             }
 
             if (!datetime) {
-                alert("Пожалуйста, выберите дату и время!");
+                alert("Пожалуйста, выберите время записи!");
                 return;
             }
 
-            if (!userId) {
-                alert("Зайдите через официальный бот Telegram!");
-                return;
-            }
-
-            const clientMessage = `<b>✅ ЗАПИСЬ ПРИНЯТА!</b>\n\n📞 Тел: ${phone}\n✂️ Услуга: ${service}\n📅 Когда: ${datetime.replace('T', ' ')}`;
-            const adminMessage = `<b>🇰🇿 НОВАЯ ЗАПИСЬ (KZ)</b>\n━━━━━━━━━━━━━\n👤 <b>Клиент:</b> ${userName}\n📞 <b>Телефон:</b> <code>${phone}</code>\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${datetime.replace('T', ' ')}`;
+            const clientMessage = `<b>✅ ВЫ ЗАПИСАНЫ!</b>\n━━━━━━━━━━━━━\n🇰🇿 <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${datetime.replace('T', ' ')}\n📞 <b>Ваш номер:</b> ${phone}\n\n<i>Ждем вас!</i>`;
+            const adminMessage = `<b>🇰🇿 НОВАЯ ЗАПИСЬ</b>\n━━━━━━━━━━━━━\n👤 <b>Клиент:</b> ${userName}\n📞 <b>Телефон:</b> <code>${phone}</code>\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${datetime.replace('T', ' ')}`;
 
             try {
-                // 1. Сообщение клиенту
+                // Отправка клиенту
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: userId, text: clientMessage, parse_mode: 'HTML' })
                 });
 
-                // 2. Сообщение тебе (админу)
+                // Отправка тебе (админу)
                 if (String(userId) !== ADMIN_ID) {
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                         method: 'POST',
@@ -104,12 +103,11 @@
                     });
                 }
 
-                tg.showConfirm("Запись успешно отправлена!", () => {
-                    tg.close();
-                });
+                tg.showAlert("Запись успешно оформлена! Проверьте сообщения от бота.");
+                tg.close();
                 
             } catch (e) {
-                alert("Ошибка соединения. Проверьте интернет.");
+                alert("Ошибка при отправке. Проверьте интернет.");
             }
         }
     </script>
