@@ -13,7 +13,6 @@
         select, input { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #333; background: #2b2b2b; color: white; box-sizing: border-box; font-size: 16px; }
         button { width: 100%; padding: 15px; margin-top: 25px; border-radius: 10px; border: none; background: #0088cc; color: white; font-size: 16px; font-weight: bold; cursor: pointer; }
         .admin-badge { background: #ff9800; color: black; padding: 2px 8px; border-radius: 5px; font-size: 12px; vertical-align: middle; }
-        .price-info { font-size: 12px; color: #666; margin-top: 10px; text-align: center; }
     </style>
 </head>
 <body>
@@ -21,13 +20,13 @@
     <div id="client-ui" class="container">
         <h2>Запись на стрижку</h2>
         <label>Ваш номер телефона</label>
-        <input type="tel" id="phone" value="+7 7" maxlength="16">
+        <input type="tel" id="phone" value="8 7" maxlength="15">
 
         <label>Выберите услугу:</label>
         <select id="service">
             <option value="Мужская стрижка (4000 ₸)">Мужская стрижка — 4 000 ₸</option>
             <option value="Стрижка бороды (2500 ₸)">Стрижка бороды — 2 500 ₸</option>
-            <option value="Комплекс (6000 ₸)">Комплекс (Стрижка+Борода) — 6 000 ₸</option>
+            <option value="Комплекс (6000 ₸)">Комплекс — 6 000 ₸</option>
         </select>
 
         <label>Мастер:</label>
@@ -40,22 +39,17 @@
         <input type="datetime-local" id="datetime">
 
         <button onclick="sendOrder()">ПОДТВЕРДИТЬ ЗАПИСЬ</button>
-        <p class="price-info">Оплата производится в барбершопе</p>
     </div>
 
     <div id="admin-ui" class="container">
         <h2>Панель Мастера <span class="admin-badge">ADMIN</span></h2>
         <p id="admin-greeting" style="text-align: center; color: #0088cc;"></p>
         <hr style="border: 0.5px solid #333; margin: 20px 0;">
-        
-        <label>ID клиента (из сообщения):</label>
-        <input type="text" id="reply-id" placeholder="Например: 12345678">
-        
-        <label>Ваш ответ клиенту:</label>
-        <input type="text" id="reply-text" placeholder="Пример: Ждем вас в 15:00!">
-        
+        <label>ID клиента:</label>
+        <input type="text" id="reply-id" placeholder="ID из сообщения">
+        <label>Ваш ответ:</label>
+        <input type="text" id="reply-text" placeholder="Пример: Ждем вас!">
         <button style="background: #4caf50;" onclick="sendReply()">ОТПРАВИТЬ ОТВЕТ</button>
-        <p style="font-size: 11px; color: #666; margin-top: 15px;">Здесь вы можете отправить личное сообщение клиенту по его ID.</p>
     </div>
 
     <script>
@@ -64,103 +58,94 @@
 
         const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y";
         
-        // --- СПИСОК АДМИНОВ (Твой ID и ID мастера) ---
-        // Добавь ID мастера в кавычках через запятую
+        // --- СПИСОК АДМИНОВ ---
+        // Замени ID_МАСТЕРА на реальный ID второго человека
         const ADMIN_LIST = ["1384228457"]; 
-        // ---------------------------------------------
+        // -----------------------
 
         const user = tg.initDataUnsafe?.user;
         const userId = String(user?.id);
         const userName = user?.first_name || "Клиент";
 
-        // Проверка прав доступа
         if (ADMIN_LIST.includes(userId)) {
             document.getElementById('admin-ui').style.display = 'block';
-            document.getElementById('admin-greeting').innerText = `С возвращением, ${userName}!`;
+            document.getElementById('admin-greeting').innerText = `Мастер: ${userName}`;
         } else {
             document.getElementById('client-ui').style.display = 'block';
         }
 
-        // Фиксация +7 7
+        // МАСКА НОМЕРА: 8 7XX XXX XX XX
         const phoneInput = document.getElementById('phone');
         phoneInput.addEventListener('input', (e) => {
-            if (!e.target.value.startsWith('+7 7')) e.target.value = '+7 7';
+            let value = e.target.value.replace(/\D/g, ''); // Оставляем только цифры
+            
+            // Если пользователь стер всё, возвращаем "87"
+            if (value.length < 2) value = '87';
+            // Если начал вводить не с 87, исправляем
+            if (!value.startsWith('87')) value = '87' + value;
+
+            let formatted = '8';
+            if (value.length > 1) formatted += ' ' + value.substring(1, 4);
+            if (value.length > 4) formatted += ' ' + value.substring(4, 7);
+            if (value.length > 7) formatted += ' ' + value.substring(7, 9);
+            if (value.length > 9) formatted += ' ' + value.substring(9, 11);
+            
+            e.target.value = formatted;
         });
 
-        // Функция отправки записи
         async function sendOrder() {
             const phone = phoneInput.value.trim();
             const service = document.getElementById('service').value;
             const master = document.getElementById('master_choice').value;
             const datetime = document.getElementById('datetime').value;
 
+            // Проверка: должно быть 11 цифр (8 + 10 цифр номера)
             if (phone.replace(/\D/g, '').length < 11) {
-                alert("Пожалуйста, введите полный номер телефона!");
+                alert("Введите полный номер: 8 7XX XXX XX XX");
                 return;
             }
-            if (!datetime) {
-                alert("Выберите дату и время!");
-                return;
-            }
+            if (!datetime) { alert("Выберите время!"); return; }
 
             const adminText = `<b>🚀 НОВАЯ ЗАПИСЬ (KZ)</b>\n━━━━━━━━━━━━━\n👤 <b>Клиент:</b> ${userName}\n📞 <b>Тел:</b> <code>${phone}</code>\n✂️ <b>Услуга:</b> ${service}\n🧔 <b>Мастер:</b> ${master}\n📅 <b>Время:</b> ${datetime.replace('T', ' ')}\n━━━━━━━━━━━━━\n🆔 <b>ID для ответа:</b> <code>${userId}</code>`;
             
-            const clientText = `<b>✅ ВЫ ЗАПИСАНЫ!</b>\n\n✂️ Услуга: ${service}\n🧔 Мастер: ${master}\n📅 Время: ${datetime.replace('T', ' ')}\n\n<i>Наш мастер свяжется с вами по номеру ${phone} для подтверждения.</i>`;
+            const clientText = `<b>✅ ВЫ ЗАПИСАНЫ!</b>\n\n✂️ Услуга: ${service}\n🧔 Мастер: ${master}\n📅 Время: ${datetime.replace('T', ' ')}\n📞 Контактный тел: ${phone}`;
 
             try {
-                // 1. Уведомление КЛИЕНТУ
+                // Отправка клиенту
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: userId, text: clientText, parse_mode: 'HTML' })
                 });
 
-                // 2. Уведомление ВСЕМ АДМИНАМ (Тебе и Мастеру)
-                for (let adminId of ADMIN_LIST) {
+                // Отправка всем админам
+                for (let id of ADMIN_LIST) {
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ chat_id: adminId, text: adminText, parse_mode: 'HTML' })
+                        body: JSON.stringify({ chat_id: id, text: adminText, parse_mode: 'HTML' })
                     });
                 }
 
-                tg.showAlert("Запись успешно оформлена! Проверьте сообщения в Telegram.");
+                tg.showAlert("Запись успешно отправлена!");
                 tg.close();
-            } catch (e) {
-                alert("Ошибка при отправке. Попробуйте снова.");
-            }
+            } catch (e) { alert("Ошибка при отправке!"); }
         }
 
-        // Функция ответа админа
         async function sendReply() {
             const cid = document.getElementById('reply-id').value.trim();
             const msg = document.getElementById('reply-text').value.trim();
-
-            if (!cid || !msg) {
-                alert("Введите ID клиента и текст ответа!");
-                return;
-            }
+            if (!cid || !msg) return alert("Заполните ID клиента и текст!");
 
             try {
-                const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: cid,
-                        text: `<b>✉️ Сообщение от BarberShop:</b>\n\n${msg}`,
-                        parse_mode: 'HTML'
-                    })
+                    body: JSON.stringify({ chat_id: cid, text: `<b>✉️ Сообщение от BarberShop:</b>\n\n${msg}`, parse_mode: 'HTML' })
                 });
-
-                if (res.ok) {
-                    alert("Ответ успешно отправлен клиенту!");
-                    document.getElementById('reply-text').value = "";
-                } else {
-                    alert("Не удалось отправить. Возможно, ID неверный.");
-                }
-            } catch (e) {
-                alert("Ошибка сети.");
-            }
+                alert("Ответ отправлен!");
+                document.getElementById('reply-text').value = "";
+            } catch (e) { alert("Ошибка!"); }
         }
     </script>
 </body>
