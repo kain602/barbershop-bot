@@ -3,46 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barber Booking KZ</title>
+    <title>BarberShop KZ</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: #ffffff; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .container { background: #1e1e1e; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 350px; }
-        h2 { text-align: center; color: #0088cc; margin-bottom: 20px; }
-        label { display: block; margin-top: 15px; font-size: 14px; color: #aaa; text-align: left; width: 100%; }
-        select, input { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #333; background: #2b2b2b; color: white; box-sizing: border-box; font-size: 16px; }
-        input:focus { border-color: #0088cc; outline: none; }
-        button { width: 100%; padding: 15px; margin-top: 25px; border-radius: 10px; border: none; background: #0088cc; color: white; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #00aaff; transform: scale(1.02); }
-        .price-list { margin-top: 20px; font-size: 13px; color: #888; text-align: left; width: 100%; border-top: 1px solid #333; padding-top: 10px; }
+        .container { background: #1e1e1e; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 350px; display: none; }
+        h2 { text-align: center; color: #0088cc; }
+        label { display: block; margin-top: 15px; font-size: 14px; color: #aaa; }
+        select, input { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #333; background: #2b2b2b; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; margin-top: 20px; border-radius: 10px; border: none; background: #0088cc; color: white; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .admin-badge { background: #ff9800; color: black; padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: bold; }
         .error-hint { color: #ff4444; font-size: 12px; margin-top: 5px; display: none; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>BarberShop KZ</h2>
-        
+    <div id="client-ui" class="container">
+        <h2>Запись (KZ)</h2>
         <label>Ваш номер телефона</label>
-        <input type="tel" id="phone" value="+7 7" maxlength="16">
-        <div id="phone-error" class="error-hint">Введите полный номер (+7 7XX...)</div>
+        <input type="tel" id="phone" value="+7 7">
+        <div id="phone-error" class="error-hint">Введите полный номер</div>
 
-        <label>Выберите услугу и цену:</label>
+        <label>Услуга:</label>
         <select id="service">
             <option value="Мужская стрижка (4000 ₸)">Мужская стрижка — 4 000 ₸</option>
             <option value="Стрижка бороды (2500 ₸)">Стрижка бороды — 2 500 ₸</option>
-            <option value="Комплекс (6000 ₸)">Комплекс (Стрижка + Борода) — 6 000 ₸</option>
-            <option value="Детская стрижка (3000 ₸)">Детская стрижка — 3 000 ₸</option>
+            <option value="Комплекс (6000 ₸)">Комплекс — 6 000 ₸</option>
         </select>
 
         <label>Дата и время:</label>
         <input type="datetime-local" id="datetime">
-
         <button onclick="sendOrder()">ЗАПИСАТЬСЯ</button>
+    </div>
 
-        <div class="price-list">
-            * Оплата производится на месте после услуги.
-        </div>
+    <div id="admin-ui" class="container">
+        <h2>Панель Мастера <span class="admin-badge">ADMIN</span></h2>
+        <p id="welcome-admin"></p>
+        <hr style="border: 0.5px solid #333; width: 100%;">
+        
+        <label>Ответить клиенту (ID из уведомления):</label>
+        <input type="text" id="reply-id" placeholder="ID клиента">
+        <input type="text" id="reply-text" placeholder="Текст (Запись подтверждена и т.д.)">
+        
+        <button style="background: #4caf50;" onclick="sendReply()">ОТПРАВИТЬ ОТВЕТ</button>
     </div>
 
     <script>
@@ -50,65 +53,74 @@
         tg.expand();
 
         const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y";
-        const ADMIN_ID = "1384228457";
+        
+        // --- СПИСОК АДМИНОВ (Сюда добавляй ID своих работников через запятую) ---
+        const ADMIN_LIST = ["1384228457"]; 
+        // -----------------------------------------------------------------------
 
+        const userId = String(tg.initDataUnsafe?.user?.id);
+        const userName = tg.initDataUnsafe?.user?.first_name || "Пользователь";
+
+        // Проверяем, кто зашел
+        if (ADMIN_LIST.includes(userId)) {
+            document.getElementById('admin-ui').style.display = 'block';
+            document.getElementById('welcome-admin').innerText = `Привет, ${userName}!`;
+        } else {
+            document.getElementById('client-ui').style.display = 'block';
+        }
+
+        // Логика телефона
         const phoneInput = document.getElementById('phone');
-        const phoneError = document.getElementById('phone-error');
-
-        // Принудительный формат +7 7
-        phoneInput.addEventListener('input', function (e) {
-            if (!e.target.value.startsWith('+7 7')) {
-                e.target.value = '+7 7';
-            }
-            phoneError.style.display = 'none';
+        phoneInput.addEventListener('input', (e) => {
+            if (!e.target.value.startsWith('+7 7')) e.target.value = '+7 7';
         });
 
+        // Функция клиента
         async function sendOrder() {
             const phone = phoneInput.value.trim();
             const service = document.getElementById('service').value;
             const datetime = document.getElementById('datetime').value;
 
-            const userId = tg.initDataUnsafe?.user?.id;
-            const userName = tg.initDataUnsafe?.user?.first_name || "Клиент";
-
-            // Валидация
             if (phone.replace(/\D/g, '').length < 11) {
-                phoneError.style.display = 'block';
-                phoneInput.focus();
-                return;
+                alert("Введите полный номер!"); return;
             }
+            if (!datetime) { alert("Выберите время!"); return; }
 
-            if (!datetime) {
-                alert("Пожалуйста, выберите время записи!");
-                return;
-            }
-
-            const clientMessage = `<b>✅ ВЫ ЗАПИСАНЫ!</b>\n━━━━━━━━━━━━━\n🇰🇿 <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${datetime.replace('T', ' ')}\n📞 <b>Ваш номер:</b> ${phone}\n\n<i>Ждем вас!</i>`;
-            const adminMessage = `<b>🇰🇿 НОВАЯ ЗАПИСЬ</b>\n━━━━━━━━━━━━━\n👤 <b>Клиент:</b> ${userName}\n📞 <b>Телефон:</b> <code>${phone}</code>\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${datetime.replace('T', ' ')}`;
+            const text = `<b>🇰🇿 НОВАЯ ЗАПИСЬ</b>\n👤 Имя: ${userName}\n📞 Тел: <code>${phone}</code>\n✂️ Услуга: ${service}\n📅 Время: ${datetime.replace('T', ' ')}\n🆔 ID для ответа: <code>${userId}</code>`;
 
             try {
-                // Отправка клиенту
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: userId, text: clientMessage, parse_mode: 'HTML' })
-                });
-
-                // Отправка тебе (админу)
-                if (String(userId) !== ADMIN_ID) {
+                // Отправляем всем админам из списка
+                for (let admin of ADMIN_LIST) {
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ chat_id: ADMIN_ID, text: adminMessage, parse_mode: 'HTML' })
+                        body: JSON.stringify({ chat_id: admin, text: text, parse_mode: 'HTML' })
                     });
                 }
-
-                tg.showAlert("Запись успешно оформлена! Проверьте сообщения от бота.");
+                alert("Запись отправлена мастерам!");
                 tg.close();
-                
-            } catch (e) {
-                alert("Ошибка при отправке. Проверьте интернет.");
-            }
+            } catch (e) { alert("Ошибка сети."); }
+        }
+
+        // Функция админа (ответ)
+        async function sendReply() {
+            const cid = document.getElementById('reply-id').value;
+            const msg = document.getElementById('reply-text').value;
+
+            if (!cid || !msg) { alert("Заполните ID и текст!"); return; }
+
+            try {
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: cid,
+                        text: `<b>✉️ Сообщение от BarberShop:</b>\n\n${msg}`,
+                        parse_mode: 'HTML'
+                    })
+                });
+                alert("Ответ отправлен клиенту!");
+            } catch (e) { alert("Ошибка при отправке."); }
         }
     </script>
 </body>
