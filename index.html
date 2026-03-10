@@ -43,45 +43,58 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // ДАННЫЕ ИЗ ТВОИХ СООБЩЕНИЙ
         const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y";
-        const MY_CHAT_ID = "1384228457"; // Твой личный ID
 
         async function sendDataToBot() {
             const service = document.getElementById('service').value;
             const master = document.getElementById('master').value;
             const datetime = document.getElementById('datetime').value;
 
+            // ПОЛУЧАЕМ ID ТОГО, КТО ОТКРЫЛ БОТА
+            const user = tg.initDataUnsafe?.user;
+            const userId = user?.id;
+
+            if (!userId) {
+                alert("Ошибка: не удалось определить ваш Telegram ID. Запустите приложение через бота.");
+                return;
+            }
+
             if (!datetime) {
-                alert("Пожалуйста, выбери время!");
+                alert("Пожалуйста, выберите время!");
                 return;
             }
 
             const message = `
-<b>🚀 НОВАЯ ЗАПИСЬ!</b>
+<b>🚀 ВАША ЗАПИСЬ ОФОРМЛЕНА!</b>
 ━━━━━━━━━━━━━
+👤 <b>Клиент:</b> ${user.first_name || 'Пользователь'}
 ✂️ <b>Услуга:</b> ${service}
 👤 <b>Мастер:</b> ${master}
 📅 <b>Когда:</b> ${datetime.replace('T', ' ')}
-━━━━━━━━━━━━━`;
+━━━━━━━━━━━━━
+<i>Спасибо, что выбрали нас!</i>`;
 
             try {
                 const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        chat_id: MY_CHAT_ID,
+                        chat_id: userId, // Отправляем тому, кто нажал кнопку
                         text: message,
                         parse_mode: 'HTML'
                     })
                 });
 
                 if (response.ok) {
-                    alert("✅ Готово! Бот прислал тебе уведомление.");
+                    alert("✅ Готово! Бот отправил подтверждение вам в личные сообщения.");
                     tg.close();
                 } else {
                     const errorData = await response.json();
-                    alert("Ошибка: " + errorData.description);
+                    if (errorData.error_code === 403) {
+                        alert("Ошибка: Сначала нажмите 'Запустить' (Start) в самом боте!");
+                    } else {
+                        alert("Ошибка: " + errorData.description);
+                    }
                 }
             } catch (e) {
                 alert("Ошибка сети: " + e.message);
