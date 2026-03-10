@@ -18,9 +18,9 @@
 <body>
 
     <div class="container">
-        <h2>Запись на стрижку</h2>
+        <h2>Запись в Барбершоп</h2>
         
-        <label>Выберите услугу:</label>
+        <label>Услуга:</label>
         <select id="service">
             <option value="Мужская стрижка">Мужская стрижка</option>
             <option value="Стрижка бороды">Стрижка бороды</option>
@@ -36,7 +36,7 @@
         <label>Дата и время:</label>
         <input type="datetime-local" id="datetime">
 
-        <button onclick="sendDataToBot()">ЗАПИСАТЬСЯ</button>
+        <button onclick="sendOrder()">ЗАПИСАТЬСЯ</button>
     </div>
 
     <script>
@@ -44,60 +44,53 @@
         tg.expand();
 
         const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y";
+        const ADMIN_ID = "1384228457"; // Твой ID, чтобы ты видел все записи
 
-        async function sendDataToBot() {
+        async function sendToTelegram(chatId, text) {
+            return fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: text,
+                    parse_mode: 'HTML'
+                })
+            });
+        }
+
+        async function sendOrder() {
             const service = document.getElementById('service').value;
             const master = document.getElementById('master').value;
             const datetime = document.getElementById('datetime').value;
 
-            // ПОЛУЧАЕМ ID ТОГО, КТО ОТКРЫЛ БОТА
-            const user = tg.initDataUnsafe?.user;
-            const userId = user?.id;
-
-            if (!userId) {
-                alert("Ошибка: не удалось определить ваш Telegram ID. Запустите приложение через бота.");
-                return;
-            }
+            // ID того человека, который нажал на кнопку
+            const userId = tg.initDataUnsafe?.user?.id;
+            const userName = tg.initDataUnsafe?.user?.first_name || "Клиент";
 
             if (!datetime) {
-                alert("Пожалуйста, выберите время!");
+                alert("Пожалуйста, выберите дату и время!");
                 return;
             }
 
-            const message = `
-<b>🚀 ВАША ЗАПИСЬ ОФОРМЛЕНА!</b>
-━━━━━━━━━━━━━
-👤 <b>Клиент:</b> ${user.first_name || 'Пользователь'}
-✂️ <b>Услуга:</b> ${service}
-👤 <b>Мастер:</b> ${master}
-📅 <b>Когда:</b> ${datetime.replace('T', ' ')}
-━━━━━━━━━━━━━
-<i>Спасибо, что выбрали нас!</i>`;
+            if (!userId) {
+                alert("Ошибка: Зайдите через Telegram бота!");
+                return;
+            }
+
+            const clientMessage = `<b>✅ ВЫ ЗАПИСАНЫ!</b>\n\n✂️ Услуга: ${service}\n👤 Мастер: ${master}\n📅 Время: ${datetime.replace('T', ' ')}`;
+            const adminMessage = `<b>🚀 НОВАЯ ЗАПИСЬ!</b>\n\n👤 Клиент: ${userName} (ID: ${userId})\n✂️ Услуга: ${service}\n👤 Мастер: ${master}\n📅 Время: ${datetime.replace('T', ' ')}`;
 
             try {
-                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: userId, // Отправляем тому, кто нажал кнопку
-                        text: message,
-                        parse_mode: 'HTML'
-                    })
-                });
+                // 1. Отправляем клиенту
+                await sendToTelegram(userId, clientMessage);
+                
+                // 2. Отправляем тебе (админу)
+                await sendToTelegram(ADMIN_ID, adminMessage);
 
-                if (response.ok) {
-                    alert("✅ Готово! Бот отправил подтверждение вам в личные сообщения.");
-                    tg.close();
-                } else {
-                    const errorData = await response.json();
-                    if (errorData.error_code === 403) {
-                        alert("Ошибка: Сначала нажмите 'Запустить' (Start) в самом боте!");
-                    } else {
-                        alert("Ошибка: " + errorData.description);
-                    }
-                }
+                alert("Запись оформлена! Проверьте сообщения от бота.");
+                tg.close();
             } catch (e) {
-                alert("Ошибка сети: " + e.message);
+                alert("Произошла ошибка при отправке.");
             }
         }
     </script>
