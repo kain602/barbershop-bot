@@ -59,8 +59,7 @@
         const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y";
         
         // --- СПИСОК АДМИНОВ ---
-        // Замени ID_МАСТЕРА на реальный ID второго человека
-        const ADMIN_LIST = ["1384228457"]; 
+        const ADMIN_LIST = ["1384228457" , "1135400759"]; 
         // -----------------------
 
         const user = tg.initDataUnsafe?.user;
@@ -74,14 +73,10 @@
             document.getElementById('client-ui').style.display = 'block';
         }
 
-        // МАСКА НОМЕРА: 8 7XX XXX XX XX
         const phoneInput = document.getElementById('phone');
         phoneInput.addEventListener('input', (e) => {
-            let value = e.target.value.replace(/\D/g, ''); // Оставляем только цифры
-            
-            // Если пользователь стер всё, возвращаем "87"
+            let value = e.target.value.replace(/\D/g, '');
             if (value.length < 2) value = '87';
-            // Если начал вводить не с 87, исправляем
             if (!value.startsWith('87')) value = '87' + value;
 
             let formatted = '8';
@@ -89,53 +84,53 @@
             if (value.length > 4) formatted += ' ' + value.substring(4, 7);
             if (value.length > 7) formatted += ' ' + value.substring(7, 9);
             if (value.length > 9) formatted += ' ' + value.substring(9, 11);
-            
             e.target.value = formatted;
         });
 
         async function sendOrder() {
-            const phone = phoneInput.value.trim();
+            const rawPhone = phoneInput.value.replace(/\D/g, ''); // Номер без пробелов (87006721186)
             const service = document.getElementById('service').value;
             const master = document.getElementById('master_choice').value;
             const datetime = document.getElementById('datetime').value;
 
-            // Проверка: должно быть 11 цифр (8 + 10 цифр номера)
-            if (phone.replace(/\D/g, '').length < 11) {
-                alert("Введите полный номер: 8 7XX XXX XX XX");
+            if (rawPhone.length < 11) {
+                alert("Введите полный номер!");
                 return;
             }
             if (!datetime) { alert("Выберите время!"); return; }
 
-            const adminText = `<b>🚀 НОВАЯ ЗАПИСЬ (KZ)</b>\n━━━━━━━━━━━━━\n👤 <b>Клиент:</b> ${userName}\n📞 <b>Тел:</b> <code>${phone}</code>\n✂️ <b>Услуга:</b> ${service}\n🧔 <b>Мастер:</b> ${master}\n📅 <b>Время:</b> ${datetime.replace('T', ' ')}\n━━━━━━━━━━━━━\n🆔 <b>ID для ответа:</b> <code>${userId}</code>`;
+            // Формируем ссылку для WhatsApp (через 7-ку)
+            const waPhone = '7' + rawPhone.substring(1); 
+            const waLink = `https://wa.me/${waPhone}`;
+
+            const adminText = `<b>🚀 НОВАЯ ЗАПИСЬ (KZ)</b>\n━━━━━━━━━━━━━\n👤 <b>Клиент:</b> ${userName}\n📞 <b>Тел:</b> <code>${rawPhone}</code>\n✂️ <b>Услуга:</b> ${service}\n🧔 <b>Мастер:</b> ${master}\n📅 <b>Время:</b> ${datetime.replace('T', ' ')}\n━━━━━━━━━━━━━\n💬 <a href="${waLink}">Написать в WhatsApp</a>\n🆔 <b>ID для ответа в TG:</b> <code>${userId}</code>`;
             
-            const clientText = `<b>✅ ВЫ ЗАПИСАНЫ!</b>\n\n✂️ Услуга: ${service}\n🧔 Мастер: ${master}\n📅 Время: ${datetime.replace('T', ' ')}\n📞 Контактный тел: ${phone}`;
+            const clientText = `<b>✅ ВЫ ЗАПИСАНЫ!</b>\n\n✂️ Услуга: ${service}\n🧔 Мастер: ${master}\n📅 Время: ${datetime.replace('T', ' ')}`;
 
             try {
-                // Отправка клиенту
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: userId, text: clientText, parse_mode: 'HTML' })
                 });
 
-                // Отправка всем админам
                 for (let id of ADMIN_LIST) {
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ chat_id: id, text: adminText, parse_mode: 'HTML' })
+                        body: JSON.stringify({ chat_id: id, text: adminText, parse_mode: 'HTML', disable_web_page_preview: true })
                     });
                 }
 
-                tg.showAlert("Запись успешно отправлена!");
+                tg.showAlert("Запись отправлена!");
                 tg.close();
-            } catch (e) { alert("Ошибка при отправке!"); }
+            } catch (e) { alert("Ошибка!"); }
         }
 
         async function sendReply() {
             const cid = document.getElementById('reply-id').value.trim();
             const msg = document.getElementById('reply-text').value.trim();
-            if (!cid || !msg) return alert("Заполните ID клиента и текст!");
+            if (!cid || !msg) return alert("Заполните поля!");
 
             try {
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -143,7 +138,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: cid, text: `<b>✉️ Сообщение от BarberShop:</b>\n\n${msg}`, parse_mode: 'HTML' })
                 });
-                alert("Ответ отправлен!");
+                alert("Отправлено!");
                 document.getElementById('reply-text').value = "";
             } catch (e) { alert("Ошибка!"); }
         }
