@@ -2,159 +2,91 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BarberShop Premium</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой Барбершоп</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root {
-            --bg-color: #000000; /* Глубокий черный */
-            --card-bg: #121212; /* Цвет карточек */
-            --accent-color: #ffffff; /* Белый акцент */
-            --text-main: #ffffff;
-            --text-secondary: #888888;
-            --button-bg: #ffffff;
-            --button-text: #000000;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            justify-content: center;
-        }
-
-        h2 {
-            text-align: center;
-            font-size: 24px;
-            margin-bottom: 30px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            font-weight: 700;
-        }
-
-        .form-group {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            border: 1px solid #222;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 10px;
-            font-size: 11px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-        }
-
-        select, input {
-            width: 100%;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            padding: 14px;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 16px;
-            outline: none;
-            box-sizing: border-box;
-            transition: border-color 0.3s;
-        }
-
-        select:focus, input:focus {
-            border-color: var(--accent-color);
-        }
-
-        .submit-btn {
-            margin-top: 20px;
-            width: 100%;
-            padding: 18px;
-            background: var(--button-bg);
-            color: var(--button-text);
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .submit-btn:active {
-            transform: scale(0.97);
-            opacity: 0.9;
-        }
-
-        /* Инверсия иконки календаря для темной темы */
-        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: #ffffff; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { background: #1e1e1e; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 350px; }
+        h2 { text-align: center; color: #0088cc; }
+        label { display: block; margin-top: 15px; font-size: 14px; color: #aaa; }
+        select, input { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #333; background: #2b2b2b; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; margin-top: 25px; border-radius: 10px; border: none; background: #0088cc; color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #00aaff; transform: scale(1.02); }
     </style>
 </head>
 <body>
 
-    <h2>БРОНИРОВАНИЕ</h2>
-    
-    <div class="form-group">
-        <label>Выберите услугу</label>
+    <div class="container">
+        <h2>Запись на стрижку</h2>
+        
+        <label>Выберите услугу:</label>
         <select id="service">
-            <option value="Мужская стрижка">Мужская стрижка — 8 000 ₸</option>
-            <option value="Стрижка бороды">Стрижка бороды — 5 000 ₸</option>
-            <option value="Комплекс (Стрижка+Борода)">Стрижка + Борода — 11 000 ₸</option>
-            <option value="Окрашивание волос">Окрашивание — 10 000 ₸</option>
+            <option value="Мужская стрижка">Мужская стрижка — 1500₽</option>
+            <option value="Стрижка бороды">Стрижка бороды — 800₽</option>
+            <option value="Комплекс">Комплекс — 2000₽</option>
         </select>
-    </div>
 
-    <div class="form-group">
-        <label>Выберите мастера</label>
+        <label>Мастер:</label>
         <select id="master">
-            <option value="Александр">Александр (Top Master)</option>
-            <option value="Дмитрий">Дмитрий (Barber)</option>
-            <option value="Арман">Арман (Junior)</option>
+            <option value="Алексей">Алексей (Топ-барбер)</option>
+            <option value="Дмитрий">Дмитрий (Профи)</option>
         </select>
-    </div>
 
-    <div class="form-group">
-        <label>Дата и время</label>
+        <label>Дата и время:</label>
         <input type="datetime-local" id="datetime">
-    </div>
 
-    <button class="submit-btn" id="main_button">ЗАПИСАТЬСЯ</button>
+        <button onclick="sendDataToBot()">ЗАПИСАТЬСЯ</button>
+    </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Развернуть на весь экран
-        tg.ready();
+        tg.expand();
 
-        const btn = document.getElementById('main_button');
+        // ТВОИ ДАННЫЕ
+        const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y";
+        const MY_CHAT_ID = "8424249026"; // Твой ID
 
-        btn.addEventListener('click', () => {
+        async function sendDataToBot() {
             const service = document.getElementById('service').value;
             const master = document.getElementById('master').value;
             const datetime = document.getElementById('datetime').value;
 
             if (!datetime) {
-                tg.showAlert("Пожалуйста, выберите дату и время записи!");
+                alert("Пожалуйста, выбери время!");
                 return;
             }
 
-            // Формируем объект данных для бота
-            const data = {
-                service: service,
-                master: master,
-                date: datetime.replace('T', ' в ')
-            };
+            const message = `
+<b>🚀 НОВАЯ ЗАПИСЬ!</b>
+━━━━━━━━━━━━━
+✂️ <b>Услуга:</b> ${service}
+👤 <b>Мастер:</b> ${master}
+📅 <b>Когда:</b> ${datetime.replace('T', ' ')}
+━━━━━━━━━━━━━
+<i>Клиент ждет подтверждения!</i>`;
 
-            // Отправляем данные боту (метод sendData закроет окно и передаст JSON)
-            tg.sendData(JSON.stringify(data));
-        });
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: MY_CHAT_ID,
+                        text: message,
+                        parse_mode: 'HTML'
+                    })
+                });
+
+                if (response.ok) {
+                    alert("✅ Готово! Сообщение отправлено боту.");
+                    tg.close();
+                } else {
+                    alert("❌ Ошибка при отправке.");
+                }
+            } catch (e) {
+                alert("Ошибка сети: " + e.message);
+            }
+        }
     </script>
 </body>
 </html>
