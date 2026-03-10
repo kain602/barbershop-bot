@@ -1,38 +1,90 @@
-// 1. Твои данные
-const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y";
-const MY_CHAT_ID = "8424249026"; // <--- ЗАМЕНИ ЭТО!
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barber Booking</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: white; display: flex; justify-content: center; padding: 20px; }
+        .card { background: #1e1e1e; padding: 20px; border-radius: 15px; width: 100%; max-width: 400px; border: 1px solid #333; }
+        h2 { color: #0088cc; text-align: center; }
+        select, input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #252525; color: white; box-sizing: border-box; }
+        button { background: #0088cc; color: white; border: none; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        button:hover { background: #00aaff; }
+    </style>
+</head>
+<body>
 
-async function sendOrder() {
-    const service = document.getElementById('service').value;
-    const master = document.getElementById('master').value;
-    const date = document.getElementById('date').value;
+<div class="card">
+    <h2>Запись к мастеру</h2>
+    <label>Услуга:</label>
+    <select id="service">
+        <option value="Стрижка">Стрижка</option>
+        <option value="Борода">Борода</option>
+        <option value="Комплекс">Комплекс</option>
+    </select>
 
-    if (!date) {
-        alert("Выбери дату!");
-        return;
-    }
+    <label>Мастер:</label>
+    <select id="master">
+        <option value="Алексей">Алексей</option>
+        <option value="Дмитрий">Дмитрий</option>
+    </select>
 
-    const text = `🚀 НОВАЯ ЗАПИСЬ!\n✂️ Услуга: ${service}\n👤 Мастер: ${master}\n📅 Дата: ${date}`;
+    <label>Дата и время:</label>
+    <input type="datetime-local" id="date">
 
-    // Прямой запрос к Telegram API
-    try {
-        const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: MY_CHAT_ID,
-                text: text,
-                parse_mode: 'HTML'
-            })
-        });
+    <button onclick="sendBooking()">ЗАПИСАТЬСЯ</button>
+</div>
 
-        if (response.ok) {
-            alert("✅ Запись отправлена! Проверь свой Telegram.");
-        } else {
-            const err = await response.json();
-            alert("Ошибка Telegram: " + err.description);
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    // ТВОИ ДАННЫЕ
+    const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y";
+    
+    // ВНИМАНИЕ: Сюда нужно вставить ID из бота @userinfobot
+    // Если оставить 8424249026, будет ОШИБКА
+    const MY_CHAT_ID = "8424249026"; 
+
+    async function sendBooking() {
+        const service = document.getElementById('service').value;
+        const master = document.getElementById('master').value;
+        const date = document.getElementById('date').value;
+
+        if (!date) {
+            alert("Пожалуйста, выбери время!");
+            return;
         }
-    } catch (e) {
-        alert("Ошибка сети: " + e.message);
+
+        const text = `🔔 <b>НОВАЯ ЗАПИСЬ!</b>\n\n✂️ Услуга: ${service}\n👤 Мастер: ${master}\n📅 Когда: ${date.replace('T', ' ')}`;
+
+        try {
+            const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: MY_CHAT_ID,
+                    text: text,
+                    parse_mode: 'HTML'
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert("✅ Запись отправлена! Проверь свой Telegram.");
+                tg.close();
+            } else {
+                alert("❌ Ошибка: " + result.description);
+                console.log(result);
+            }
+        } catch (e) {
+            alert("Ошибка сети. Проверь интернет.");
+        }
     }
-}
+</script>
+
+</body>
+</html>
