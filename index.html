@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BarberShop Premium</title>
+    <title>BarberShop Control System</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <style>
-        /* CSS: ЖИВЫЕ ОБОИ */
+        /* [CSS] Живые обои и анимация градиента */
         body { 
             font-family: 'Segoe UI', Roboto, sans-serif; 
             background: linear-gradient(45deg, #0f172a, #1e293b, #0f172a, #1e3a8a);
@@ -30,23 +30,7 @@
             100% { background-position: 0% 50%; }
         }
 
-        .bg-sphere {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(80px);
-            z-index: -1;
-            opacity: 0.4;
-            animation: float 12s infinite alternate ease-in-out;
-        }
-        .sphere-1 { width: 300px; height: 300px; background: #38bdf8; top: -50px; right: -50px; }
-        .sphere-2 { width: 250px; height: 250px; background: #818cf8; bottom: -50px; left: -50px; animation-delay: -3s; }
-
-        @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(40px, 60px) scale(1.1); }
-        }
-
-        /* КОНТЕЙНЕР (СТЕКЛО) */
+        /* [CSS] Стеклянная карточка и выравнивание */
         .container { 
             background: rgba(30, 41, 59, 0.65); 
             backdrop-filter: blur(15px);
@@ -63,50 +47,25 @@
         }
 
         h2 { text-align: center; color: #38bdf8; margin: 0 0 25px 0; font-weight: 700; width: 100%; }
-        
-        .form-group {
-            width: 100%;
-            margin-bottom: 15px;
-            display: flex;
-            flex-direction: column;
-        }
-
+        .form-group { width: 100%; margin-bottom: 15px; display: flex; flex-direction: column; }
         label { font-size: 13px; color: #94a3b8; margin-bottom: 8px; margin-left: 5px; }
         
         select, input { 
-            width: 100%; 
-            padding: 14px 16px; 
-            border-radius: 12px; 
-            border: 1px solid rgba(255,255,255,0.1); 
-            background: rgba(15, 23, 42, 0.8); 
-            color: white; 
-            font-size: 16px; 
-            box-sizing: border-box;
+            width: 100%; padding: 14px 16px; border-radius: 12px; 
+            border: 1px solid rgba(255,255,255,0.1); background: rgba(15, 23, 42, 0.8); 
+            color: white; font-size: 16px; box-sizing: border-box;
         }
 
         button { 
-            width: 100%; 
-            padding: 16px; 
-            margin-top: 15px; 
-            border-radius: 12px; 
-            border: none; 
+            width: 100%; padding: 16px; margin-top: 15px; border-radius: 12px; border: none; 
             background: linear-gradient(90deg, #0284c7 0%, #38bdf8 100%); 
-            color: white; 
-            font-size: 16px; 
-            font-weight: 700; 
-            box-shadow: 0 10px 20px rgba(2, 132, 199, 0.4);
-            cursor: pointer;
+            color: white; font-size: 16px; font-weight: 700; cursor: pointer;
         }
-        button:active { transform: scale(0.97); }
 
         .admin-badge { background: #f59e0b; color: #000; padding: 3px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; }
-        .info-msg { font-size: 12px; color: #64748b; text-align: center; margin-top: 15px; }
     </style>
 </head>
 <body>
-
-    <div class="bg-sphere sphere-1"></div>
-    <div class="bg-sphere sphere-2"></div>
 
     <div id="client-ui" class="container">
         <h2>Premium Barber</h2>
@@ -124,17 +83,16 @@
         </div>
         <div class="form-group">
             <label>Дата и время визита</label>
-            <input type="datetime-local" id="datetime" step="3600">
+            <input type="datetime-local" id="datetime">
         </div>
         <button onclick="sendOrder()">ЗАПИСАТЬСЯ</button>
-        <p class="info-msg">Напомним за 30 минут до визита 🔔</p>
     </div>
 
     <div id="admin-ui" class="container">
         <h2>Мастер <span class="admin-badge">Admin</span></h2>
-        <p id="admin-greeting" style="text-align: center; font-size: 14px; color: #38bdf8; margin-bottom: 15px;"></p>
+        <p id="admin-greeting" style="text-align: center; color: #38bdf8;"></p>
         <div class="form-group">
-            <label>ID клиента из сообщения</label>
+            <label>ID клиента</label>
             <input type="text" id="reply-id" placeholder="Вставь ID">
         </div>
         <div class="form-group">
@@ -145,24 +103,29 @@
     </div>
 
     <script>
+        /* [JS] Логика администрирования */
         const tg = window.Telegram.WebApp;
         tg.expand();
 
         const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y";
-        const ADMIN_LIST = ["1384228457"]; 
+        
+        // ГЛАВНЫЙ АДМИН (Получает все копии ответов)
+        const MAIN_ADMIN = "1384228457"; 
+        
+        // Список всех админов (включая главного)
+        const ADMIN_LIST = [MAIN_ADMIN, "5348210978"]; 
 
         const user = tg.initDataUnsafe?.user;
         const userId = String(user?.id);
         const userName = user?.first_name || "Гость";
 
-        // ЛОГИКА РАЗДЕЛЕНИЯ ЭКРАНОВ
         function showUI() {
             const clientCard = document.getElementById('client-ui');
             const adminCard = document.getElementById('admin-ui');
             if (ADMIN_LIST.includes(userId)) {
                 adminCard.style.display = 'flex';
                 clientCard.remove();
-                document.getElementById('admin-greeting').innerText = `Мастер: ${userName}`;
+                document.getElementById('admin-greeting').innerText = `Админ: ${userName} ${userId === MAIN_ADMIN ? '(Главный)' : ''}`;
             } else {
                 clientCard.style.display = 'flex';
                 adminCard.remove();
@@ -170,48 +133,25 @@
         }
         showUI();
 
-        // Маска телефона
-        const phoneInput = document.getElementById('phone');
-        if (phoneInput) {
-            phoneInput.addEventListener('input', (e) => {
-                let value = e.target.value.replace(/\D/g, '');
-                if (value.length < 2) value = '87';
-                let formatted = '8';
-                if (value.length > 1) formatted += ' ' + value.substring(1, 4);
-                if (value.length > 4) formatted += ' ' + value.substring(4, 7);
-                if (value.length > 7) formatted += ' ' + value.substring(7, 9);
-                if (value.length > 9) formatted += ' ' + value.substring(9, 11);
-                e.target.value = formatted;
-            });
-        }
-
-        /* ФУНКЦИЯ ОТПРАВКИ (Как на 2 скрине) */
+        /* [JS] Отправка записи (как на 2 скрине) */
         async function sendOrder() {
             const rawPhone = document.getElementById('phone').value.replace(/\D/g, '');
             const service = document.getElementById('service').value;
             const datetime = document.getElementById('datetime').value;
 
-            if (rawPhone.length < 11 || !datetime) { alert("Заполните всё!"); return; }
+            if (rawPhone.length < 11 || !datetime) return alert("Заполните всё!");
 
-            // Ссылка WhatsApp
-            const waPhone = '7' + rawPhone.substring(1);
-            const waLink = `https://wa.me/${waPhone}`;
-
-            // ТЕКСТ ДЛЯ МАСТЕРА (ПОДРОБНЫЙ)
+            const waLink = `https://wa.me/7${rawPhone.substring(1)}`;
             const adminText = `🚀 <b>НОВАЯ ЗАПИСЬ (KZ)</b>\n━━━━━━━━━━━━━\n👤 <b>Клиент:</b> ${userName}\n📞 <b>Тел:</b> ${rawPhone}\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${datetime.replace('T', ' ')}\n━━━━━━━━━━━━━\n🔔 <b>НУЖНО НАПОМИНАНИЕ ЗА 30 МИН!</b>\n━━━━━━━━━━━━━\n💬 <a href="${waLink}">Написать в WhatsApp</a>\n🆔 <b>ID:</b> <code>${userId}</code>`;
-
-            // ТЕКСТ ДЛЯ КЛИЕНТА
             const clientText = `✅ <b>ВЫ ЗАПИСАНЫ!</b>\n\n✂️ Услуга: ${service}\n📅 Время: ${datetime.replace('T', ' ')}\n\n🔔 <b>Бот напомнит вам о записи за 30 минут до начала!</b>`;
 
             try {
-                // Шлем клиенту
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: userId, text: clientText, parse_mode: 'HTML' })
                 });
 
-                // Шлем мастеру
                 for (let id of ADMIN_LIST) {
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                         method: 'POST',
@@ -219,23 +159,37 @@
                         body: JSON.stringify({ chat_id: id, text: adminText, parse_mode: 'HTML', disable_web_page_preview: true })
                     });
                 }
-                tg.showAlert("Запись принята!");
                 tg.close();
             } catch (e) { alert("Ошибка!"); }
         }
 
+        /* [JS] Функция ответа с контролем для главного админа */
         async function sendReply() {
             const cid = document.getElementById('reply-id').value.trim();
             const msg = document.getElementById('reply-text').value.trim();
             if (!cid || !msg) return alert("Заполни поля!");
+
             try {
+                // 1. Отправка клиенту
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: cid, text: `<b>✉️ Ответ от мастера:</b>\n\n${msg}`, parse_mode: 'HTML' })
                 });
-                alert("Ответ отправлен!");
-            } catch (e) { alert("Ошибка!"); }
+
+                // 2. ОТПРАВКА КОПИИ ГЛАВНОМУ АДМИНУ (если ответил другой админ)
+                if (userId !== MAIN_ADMIN) {
+                    const controlMsg = `<b>👁 КОНТРОЛЬ ОТВЕТА</b>\n━━━━━━━━━━━━━\n👤 <b>Ответил:</b> ${userName} (ID: ${userId})\n👤 <b>Кому:</b> ID ${cid}\n💬 <b>Текст:</b> ${msg}`;
+                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ chat_id: MAIN_ADMIN, text: controlMsg, parse_mode: 'HTML' })
+                    });
+                }
+
+                alert("Ответ отправлен клиенту!");
+                document.getElementById('reply-text').value = "";
+            } catch (e) { alert("Ошибка при отправке!"); }
         }
     </script>
 </body>
