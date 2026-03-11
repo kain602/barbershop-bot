@@ -13,6 +13,7 @@
         select, input { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #333; background: #2b2b2b; color: white; box-sizing: border-box; font-size: 16px; }
         button { width: 100%; padding: 15px; margin-top: 25px; border-radius: 10px; border: none; background: #0088cc; color: white; font-size: 16px; font-weight: bold; cursor: pointer; }
         .admin-badge { background: #ff9800; color: black; padding: 2px 8px; border-radius: 5px; font-size: 12px; vertical-align: middle; }
+        .info-text { font-size: 12px; color: #888; margin-top: 10px; text-align: center; }
     </style>
 </head>
 <body>
@@ -22,7 +23,7 @@
         <label>Ваш номер телефона</label>
         <input type="tel" id="phone" value="8 7" maxlength="15">
 
-        <label>Выберите услугу:</label>
+        <label>Услуга:</label>
         <select id="service">
             <option value="Мужская стрижка (4000 ₸)">Мужская стрижка — 4 000 ₸</option>
             <option value="Стрижка бороды (2500 ₸)">Стрижка бороды — 2 500 ₸</option>
@@ -35,8 +36,9 @@
             <option value="Дмитрий">Дмитрий</option>
         </select>
 
-        <label>Дата и время:</label>
-        <input type="datetime-local" id="datetime">
+        <label>Дата и время (интервал 1 час):</label>
+        <input type="datetime-local" id="datetime" step="3600">
+        <p class="info-text">Мы напомним вам о записи за 30 минут!</p>
 
         <button onclick="sendOrder()">ПОДТВЕРДИТЬ ЗАПИСЬ</button>
     </div>
@@ -57,10 +59,7 @@
         tg.expand();
 
         const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y";
-        
-        // --- СПИСОК АДМИНОВ ---
-        const ADMIN_LIST = ["1384228457"]; 
-        // -----------------------
+        const ADMIN_LIST = ["1384228457"]; // Добавь ID мастера через запятую
 
         const user = tg.initDataUnsafe?.user;
         const userId = String(user?.id);
@@ -78,7 +77,6 @@
             let value = e.target.value.replace(/\D/g, '');
             if (value.length < 2) value = '87';
             if (!value.startsWith('87')) value = '87' + value;
-
             let formatted = '8';
             if (value.length > 1) formatted += ' ' + value.substring(1, 4);
             if (value.length > 4) formatted += ' ' + value.substring(4, 7);
@@ -88,24 +86,27 @@
         });
 
         async function sendOrder() {
-            const rawPhone = phoneInput.value.replace(/\D/g, ''); // Номер без пробелов (87006721186)
+            const rawPhone = phoneInput.value.replace(/\D/g, '');
             const service = document.getElementById('service').value;
             const master = document.getElementById('master_choice').value;
             const datetime = document.getElementById('datetime').value;
 
-            if (rawPhone.length < 11) {
-                alert("Введите полный номер!");
-                return;
-            }
+            if (rawPhone.length < 11) { alert("Введите полный номер!"); return; }
             if (!datetime) { alert("Выберите время!"); return; }
 
-            // Формируем ссылку для WhatsApp (через 7-ку)
+            // ПРОВЕРКА ЗАНЯТОСТИ (Локальная)
+            const bookingKey = `booking_${master}_${datetime}`;
+            if (localStorage.getItem(bookingKey)) {
+                alert("Извините, это время у этого мастера уже занято! Выберите другое.");
+                return;
+            }
+
             const waPhone = '7' + rawPhone.substring(1); 
             const waLink = `https://wa.me/${waPhone}`;
 
-            const adminText = `<b>🚀 НОВАЯ ЗАПИСЬ (KZ)</b>\n━━━━━━━━━━━━━\n👤 <b>Клиент:</b> ${userName}\n📞 <b>Тел:</b> <code>${rawPhone}</code>\n✂️ <b>Услуга:</b> ${service}\n🧔 <b>Мастер:</b> ${master}\n📅 <b>Время:</b> ${datetime.replace('T', ' ')}\n━━━━━━━━━━━━━\n💬 <a href="${waLink}">Написать в WhatsApp</a>\n🆔 <b>ID для ответа в TG:</b> <code>${userId}</code>`;
+            const adminText = `<b>🚀 НОВАЯ ЗАПИСЬ (KZ)</b>\n━━━━━━━━━━━━━\n👤 <b>Клиент:</b> ${userName}\n📞 <b>Тел:</b> <code>${rawPhone}</code>\n✂️ <b>Услуга:</b> ${service}\n🧔 <b>Мастер:</b> ${master}\n📅 <b>Время:</b> ${datetime.replace('T', ' ')}\n━━━━━━━━━━━━━\n🔔 <b>НУЖНО НАПОМИНАНИЕ ЗА 30 МИН!</b>\n━━━━━━━━━━━━━\n💬 <a href="${waLink}">Написать в WhatsApp</a>\n🆔 <b>ID:</b> <code>${userId}</code>`;
             
-            const clientText = `<b>✅ ВЫ ЗАПИСАНЫ!</b>\n\n✂️ Услуга: ${service}\n🧔 Мастер: ${master}\n📅 Время: ${datetime.replace('T', ' ')}`;
+            const clientText = `<b>✅ ВЫ ЗАПИСАНЫ!</b>\n\n✂️ Услуга: ${service}\n🧔 Мастер: ${master}\n📅 Время: ${datetime.replace('T', ' ')}\n\n🔔 <b>Бот напомнит вам о записи за 30 минут до начала!</b>`;
 
             try {
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -122,7 +123,10 @@
                     });
                 }
 
-                tg.showAlert("Запись отправлена!");
+                // Сохраняем бронь локально
+                localStorage.setItem(bookingKey, "occupied");
+
+                tg.showAlert("Запись принята! Мы пришлем напоминание за 30 минут.");
                 tg.close();
             } catch (e) { alert("Ошибка!"); }
         }
@@ -131,12 +135,11 @@
             const cid = document.getElementById('reply-id').value.trim();
             const msg = document.getElementById('reply-text').value.trim();
             if (!cid || !msg) return alert("Заполните поля!");
-
             try {
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: cid, text: `<b>✉️ Сообщение от BarberShop:</b>\n\n${msg}`, parse_mode: 'HTML' })
+                    body: JSON.stringify({ chat_id: cid, text: `<b>✉️ Ответ от BarberShop:</b>\n\n${msg}`, parse_mode: 'HTML' })
                 });
                 alert("Отправлено!");
                 document.getElementById('reply-text').value = "";
@@ -145,4 +148,3 @@
     </script>
 </body>
 </html>
-
