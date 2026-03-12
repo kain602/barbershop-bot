@@ -10,7 +10,6 @@
         :root {
             --bg-main: linear-gradient(45deg, #0f172a, #1e293b, #0f172a);
             --bg-barber: linear-gradient(135deg, #020617, #0f172a, #1e293b);
-            /* Более темный, благородный розовый */
             --bg-nails: linear-gradient(135deg, #4c0519, #831843, #9d174d);
         }
 
@@ -141,15 +140,14 @@
     <div id="admin-ui" class="container">
         <h2>Мастер <span style="font-size: 12px; background: #f59e0b; color: #000; padding: 2px 6px; border-radius: 5px;">Admin</span></h2>
         <div class="form-group">
-            <label>ID клиента из сообщения</label>
-            <input type="text" id="reply-id" placeholder="Напр: 8224738624">
+            <label>ID клиента</label>
+            <input type="text" id="reply-id" placeholder="ID из сообщения">
         </div>
         <div class="form-group">
             <label>Текст ответа</label>
-            <input type="text" id="reply-text" placeholder="Ваш ответ клиенту...">
+            <input type="text" id="reply-text" placeholder="Ваш ответ...">
         </div>
         <button class="btn-main btn-admin" onclick="sendReply()">ОТПРАВИТЬ ОТВЕТ</button>
-        <p style="font-size: 10px; color: #94a3b8; margin-top: 15px; text-align: center;">Клиент получит сообщение от имени бота</p>
     </div>
 
     <script>
@@ -158,12 +156,11 @@
         const body = document.getElementById('body');
 
         const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y";
-        const ADMIN_ID = "1384228457"; // Твой ID
+        const ADMIN_ID = "1384228457";
 
         const userId = String(tg.initDataUnsafe?.user?.id || "");
         const userName = tg.initDataUnsafe?.user?.first_name || "Клиент";
 
-        // Если зашел админ — сразу в админку
         if (userId === ADMIN_ID) {
             document.getElementById('hub-ui').style.display = 'none';
             document.getElementById('admin-ui').style.display = 'flex';
@@ -188,26 +185,31 @@
             const service = document.getElementById(p + 'service').value;
             const date = document.getElementById(p + 'date').value;
 
-            if (phone.length < 14 || !date) return alert("Заполните данные визита!");
+            if (phone.length < 14 || !date) return alert("Заполните данные!");
 
             const timeStr = date.replace('T', ' ');
+            
+            // Ссылки на адреса
+            const addressLink = type === 'Barber' 
+                ? '📍 <b>Адрес:</b> <a href="https://2gis.kz/almaty/geo/70000001057645936">SR Barbershop (Алматы)</a>' 
+                : '📍 <b>Адрес:</b> <a href="https://2gis.kz/almaty/geo/70000001081999536">Cozy lab (Алматы)</a>';
+
             const adminMsg = `🚀 <b>НОВАЯ ЗАПИСЬ (${type})</b>\n━━━━━━━━━━━━━\n👤 <b>Клиент:</b> ${userName}\n📞 <b>Тел:</b> ${phone}\n👤 <b>Мастер:</b> ${master}\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${timeStr}\n🆔 <b>ID:</b> <code>${userId}</code>`;
-            const clientMsg = `✅ <b>ВЫ УСПЕШНО ЗАПИСАНЫ!</b>\n━━━━━━━━━━━━━\n👤 <b>Мастер:</b> ${master}\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${timeStr}\n━━━━━━━━━━━━━\n🔔 Бот напомнит вам за 30 минут!`;
+            
+            const clientMsg = `✅ <b>ВЫ УСПЕШНО ЗАПИСАНЫ!</b>\n━━━━━━━━━━━━━\n👤 <b>Мастер:</b> ${master}\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${timeStr}\n${addressLink}\n━━━━━━━━━━━━━\n🔔 Бот напомнит вам за 30 минут!`;
 
             try {
-                // Админу
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: ADMIN_ID, text: adminMsg, parse_mode: 'HTML' })
                 });
-                // Клиенту
                 if (userId) {
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ chat_id: userId, text: clientMsg, parse_mode: 'HTML' })
+                        body: JSON.stringify({ chat_id: userId, text: clientMsg, parse_mode: 'HTML', disable_web_page_preview: false })
                     });
                 }
-                tg.showAlert("Запись успешно оформлена!");
+                tg.showAlert("Запись подтверждена! Адрес отправлен в чат.");
                 tg.close();
             } catch (e) { alert("Ошибка!"); }
         }
@@ -215,16 +217,16 @@
         async function sendReply() {
             const cid = document.getElementById('reply-id').value.trim();
             const txt = document.getElementById('reply-text').value.trim();
-            if (!cid || !txt) return alert("Введите ID и текст сообщения!");
+            if (!cid || !txt) return alert("Заполните ID и текст!");
 
             try {
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: cid, text: `<b>✉️ Сообщение от мастера:</b>\n${txt}`, parse_mode: 'HTML' })
                 });
-                alert("Ответ успешно отправлен клиенту!");
+                alert("Ответ отправлен!");
                 document.getElementById('reply-text').value = "";
-            } catch (e) { alert("Ошибка при отправке!"); }
+            } catch (e) { alert("Ошибка!"); }
         }
     </script>
 </body>
