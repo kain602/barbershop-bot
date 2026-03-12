@@ -1,156 +1,61 @@
-<!DOCTYPE html> <html lang="ru"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Beauty Hub</title> <script src="https://telegram.org/js/telegram-web-app.js"></script> <style> /* Начало блока оформления (CSS) */
-        :root { /* Глобальные переменные цветов */
-            --bg-main: linear-gradient(45deg, #0f172a, #1e293b); /* Основной темный фон */
-            --bg-barber: linear-gradient(135deg, #020617, #1e293b); /* Сине-черный фон барбера */
-            --bg-nails: linear-gradient(135deg, #4c0519, #9d174d); /* Темно-розовый фон маникюра */
-        }
-        body { /* Настройки для всей страницы */
-            font-family: 'Segoe UI', sans-serif; /* Шрифт как в современных приложениях */
-            background: var(--bg-main); /* Установка начального фона */
-            color: #fff; /* Белый цвет текста */
-            display: flex; /* Режим гибкой верстки */
-            flex-direction: column; /* Элементы в колонку */
-            align-items: center; /* Центровка по горизонтали */
-            min-height: 100vh; /* Высота на весь экран */
-            margin: 0; /* Убираем отступы браузера */
-            padding: 20px; /* Отступы от краев экрана */
-            transition: 0.6s; /* Плавная смена цветов при переключении */
-        }
-        body.barber-mode { background: var(--bg-barber); } /* Фон при выборе барбершопа */
-        body.nails-mode { background: var(--bg-nails); } /* Фон при выборе маникюра */
-
-        .container { /* Стили для карточек (форм) */
-            background: rgba(15,23,42,0.7); /* Полупрозрачный фон */
-            backdrop-filter: blur(15px); /* Эффект размытия стекла */
-            padding: 25px; /* Внутренние отступы */
-            border-radius: 30px; /* Скругление углов */
-            width: 100%; /* Ширина на весь экран */
-            max-width: 360px; /* Максимальная ширина */
-            display: none; /* Изначально все формы скрыты */
-            flex-direction: column; /* Элементы внутри в колонку */
-            border: 1px solid rgba(255,255,255,0.1); /* Тонкая рамка */
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4); /* Тень для объема */
-        }
-        .menu-card { /* Стили кнопок главного меню */
-            background: rgba(255,255,255,0.05); /* Цвет карточки */
-            padding: 25px; /* Размер карточки */
-            border-radius: 20px; /* Скругление */
-            margin-bottom: 15px; /* Отступ вниз */
-            display: flex; /* Верстка иконки и текста */
-            align-items: center; /* Центровка */
-            cursor: pointer; /* Указатель при наведении */
-            border: 1px solid rgba(255,255,255,0.1); /* Рамка */
-            font-size: 18px; /* Размер текста */
-            font-weight: bold; /* Жирный шрифт */
-        }
-        input, select, button { /* Стили полей ввода и кнопок */
-            width: 100%; /* Ширина 100% */
-            padding: 15px; /* Внутренний размер */
-            margin: 10px 0; /* Отступы между полями */
-            border-radius: 15px; /* Скругление */
-            border: none; /* Без рамок */
-            outline: none; /* Без обводки при нажатии */
-            box-sizing: border-box; /* Правильный расчет ширины */
-            font-size: 16px; /* Удобный размер шрифта */
-        }
-        input, select { background: rgba(0,0,0,0.3); color: #fff; border: 1px solid rgba(255,255,255,0.1); } /* Стиль полей ввода */
-        button { font-weight: bold; cursor: pointer; color: #fff; transition: 0.3s; } /* Общий стиль кнопок */
-        button:active { transform: scale(0.98); } /* Эффект нажатия (уменьшение) */
-        
-        .btn-barber { background: linear-gradient(135deg, #0ea5e9, #2563eb); } /* Синяя кнопка */
-        .btn-nails { background: linear-gradient(135deg, #be185d, #9d174d); } /* Розовая кнопка */
-        .btn-admin { background: linear-gradient(135deg, #10b981, #059669); } /* Зеленая кнопка */
-        .btn-back { background: none; color: #94a3b8; font-size: 14px; margin-top: 10px; cursor: pointer; text-align: center; } /* Кнопка Назад */
+<!DOCTYPE html> <html lang="ru"> <head>
+    <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <script src="https://telegram.org/js/telegram-web-app.js"></script> <style> /* ОФОРМЛЕНИЕ (Сжатое) */
+        :root { --b: #0f172a; } /* Основной цвет */
+        body { font-family: sans-serif; background: var(--b); color: #fff; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; transition: .5s; } /* База */
+        .barber-mode { background: #020617; } .nails-mode { background: #4c0519; } /* Фоны разделов */
+        .c { background: rgba(0,0,0,0.4); backdrop-filter: blur(15px); padding: 25px; border-radius: 25px; width: 100%; max-width: 350px; display: none; flex-direction: column; border: 1px solid #fff2; } /* Контейнеры */
+        .m { background: #fff1; padding: 20px; border-radius: 15px; margin-bottom: 10px; cursor: pointer; border: 1px solid #fff1; font-weight: bold; } /* Кнопки меню */
+        input, select, button { width: 100%; padding: 14px; margin: 5px 0; border-radius: 12px; border: none; font-size: 16px; box-sizing: border-box; outline: none; } /* Поля */
+        input, select { background: #0005; color: #fff; border: 1px solid #fff1; } /* Ввод данных */
+        button { font-weight: bold; color: #fff; cursor: pointer; transition: .2s; } button:active { transform: scale(0.97); } /* Кнопки */
+        .bb { background: #2563eb; } .bn { background: #be185d; } .ba { background: #10b981; } /* Цвета кнопок */
+        small { color: #94a3b8; text-align: center; margin-top: 10px; cursor: pointer; } /* Кнопка назад */
     </style>
 </head>
-<body id="body"> <div id="hub-ui" class="container" style="display: flex;"> <h2 style="text-align: center;">Beauty Hub</h2> <div class="menu-card" onclick="openS('barber')">✂️ &nbsp; Barbershop</div> <div class="menu-card" onclick="openS('nails')">💅 &nbsp; Manicure</div> </div>
+<body id="body">
+    <div id="h" class="c" style="display:flex"><h2>Beauty Hub</h2><div class="m" onclick="s('barber')">✂️ Barbershop</div><div class="m" onclick="s('nails')">💅 Manicure</div></div>
 
-    <div id="barber-ui" class="container"> <h2 style="color: #38bdf8;">Barbershop</h2> <input type="tel" id="b-phone" value="8 "> <select id="b-master"><option>Санжар</option><option>Женыс</option></select> <select id="b-service"><option>Стрижка — 4000 ₸</option><option>Борода — 2500 ₸</option></select> <input type="datetime-local" id="b-date"> <button class="btn-barber" onclick="sendB('Barber')">ЗАПИСАТЬСЯ</button> <div class="btn-back" onclick="goB()">← Назад</div> </div>
+    <div id="barber-ui" class="c"><h2>Barber</h2><input id="bp" value="8 "><select id="bm"><option>Санжар</option><option>Женыс</option></select><input type="datetime-local" id="bd"><button class="bb" onclick="send('Barber')">ЗАПИСАТЬСЯ</button><small onclick="g()">← Назад</small></div>
 
-    <div id="nails-ui" class="container"> <h2 style="color: #f472b6;">Manicure</h2> <input type="tel" id="n-phone" value="8 "> <select id="n-master"><option>Акмарал</option><option>Жулдыз</option></select> <select id="n-service"><option>Гель-лак — 5000 ₸</option><option>Педикюр — 6000 ₸</option></select> <input type="datetime-local" id="n-date"> <button class="btn-nails" onclick="sendB('Manicure')">ЗАПИСАТЬСЯ</button> <div class="btn-back" onclick="goB()">← Назад</div> </div>
+    <div id="nails-ui" class="c"><h2>Nails</h2><input id="np" value="8 "><select id="nm"><option>Акмарал</option><option>Жулдыз</option></select><input type="datetime-local" id="nd"><button class="bn" onclick="send('Manicure')">ЗАПИСАТЬСЯ</button><small onclick="g()">← Назад</small></div>
 
-    <div id="admin-ui" class="container"> <h2>Admin Panel</h2> <input type="text" id="rid" placeholder="ID клиента (из сообщения)"> <input type="text" id="rtxt" placeholder="Текст вашего ответа..."> <button class="btn-admin" onclick="reply()">ОТПРАВИТЬ ОТВЕТ</button> <p style="font-size: 11px; color: #94a3b8; text-align: center;">Ответ придет клиенту от имени бота</p> </div>
+    <div id="ad" class="c"><h2>Admin</h2><input id="ri" placeholder="ID клиента"><input id="rt" placeholder="Текст ответа"><button class="ba" onclick="rep()">ОТПРАВИТЬ</button></div>
 
-    <script> /* Начало логики (JavaScript) */
-        const tg = window.Telegram.WebApp; // Получаем доступ к инструментам Telegram
-        tg.expand(); // Разворачиваем окно на весь экран телефона
+    <script> /* ЛОГИКА (JavaScript) */
+        const tg = window.Telegram.WebApp; tg.expand(); // Настройка WebApp
+        const BT = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y"; // Токен бота
+        const MA = "1384228457"; // Твой основной ID
+        const AL = [MA, "ВТОРОЙ_ID"]; // СПИСОК АДМИНОВ (Сюда добавляй ID)
 
-        const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y"; // Токен твоего бота
-        const MAIN_ADMIN = "1384228457"; // Твой основной ID
-        const ADMINS = [MAIN_ADMIN, "СЮДА_АЙДИ_ВТОРОГО_АККАУНТА"]; // Список ID всех админов
+        const ui = String(tg.initDataUnsafe?.user?.id || ""), ut = "@" + (tg.initDataUnsafe?.user?.username || "no_tag"); // Данные юзера
+        if (AL.includes(ui)) { document.getElementById('h').style.display='none'; document.getElementById('ad').style.display='flex'; } // Проверка на админа
 
-        const uid = String(tg.initDataUnsafe?.user?.id || ""); // Получаем ID текущего пользователя
-        const uTag = tg.initDataUnsafe?.user?.username ? "@" + tg.initDataUnsafe.user.username : "no_tag"; // Получаем @тег пользователя
+        const msk = (i) => document.getElementById(i).oninput = (e) => { // Маска телефона 8 7XX...
+            let v = e.target.value.replace(/\D/g,''); if(!v.startsWith('8')) v='8'+v;
+            e.target.value = (v[0]||'8') + (v[1]?' '+v.slice(1,4):'') + (v[4]?' '+v.slice(4,7):'') + (v[7]?' '+v.slice(7,9):'') + (v[9]?' '+v.slice(9,11):'');
+        };
+        msk('bp'); msk('np'); // Включение маски
 
-        if (ADMINS.includes(uid)) { // Если текущий юзер есть в списке админов
-            document.getElementById('hub-ui').style.display = 'none'; // Скрываем меню клиента
-            document.getElementById('admin-ui').style.display = 'flex'; // Показываем админку
+        const s = (x) => { document.getElementById('h').style.display='none'; document.getElementById(x+'-ui').style.display='flex'; document.body.className=x+'-mode'; }; // Открыть раздел
+        const g = () => { document.querySelectorAll('.c').forEach(e=>e.style.display='none'); document.getElementById('h').style.display='flex'; document.body.className=''; }; // Назад
+        const api = (c, t) => fetch(`https://api.telegram.org/bot${BT}/sendMessage`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({chat_id:c, text:t, parse_mode:'HTML'}) }); // Отправка сообщения
+
+        async function send(t) { // Запись на услугу
+            const p = t==='Barber'?'b':'n', ph = document.getElementById(p+'p').value, m = document.getElementById(p+'m').value, d = document.getElementById(p+'d').value;
+            if (ph.length < 14 || !d) return alert("Заполни данные!"); // Проверка полей
+            const ln = t==='Barber'?'70000001057645936':'70000001081999536'; // ID для 2GIS
+            for(let a of AL) await api(a, `🚀 <b>${t}</b>\n👤 ${ut}\n📞 ${ph}\n👤 Мастер: ${m}\n📅 ${d.replace('T',' ')}\n🆔 <code>${ui}</code>`); // Уведомление всем админам
+            await api(ui, `✅ <b>Вы записаны!</b>\n👤 Мастер: ${m}\n📅 ${d.replace('T',' ')}\n📍 <a href="https://2gis.kz/almaty/geo/${ln}">Адрес (2GIS)</a>`); // Подтверждение клиенту
+            tg.close(); // Закрыть приложение
         }
 
-        function mask(id) { // Функция для красивого ввода номера 8 7XX XXX XX XX
-            document.getElementById(id).oninput = (e) => { // При каждом вводе символа
-                let v = e.target.value.replace(/\D/g,''); // Удаляем всё, кроме цифр
-                if(!v.startsWith('8')) v = '8' + v; // Всегда начинаем с 8
-                let res = v.substring(0,1) + (v.length>1?' '+v.substring(1,4):'') + (v.length>4?' '+v.substring(4,7):'') + (v.length>7?' '+v.substring(7,9):'') + (v.length>9?' '+v.substring(9,11):''); // Форматируем пробелами
-                e.target.value = res.trim(); // Записываем результат обратно в поле
-            };
+        async function rep() { // Ответ из админки
+            const i = document.getElementById('ri').value, t = document.getElementById('rt').value;
+            if(!i || !t) return alert("Заполни поля!"); // Проверка
+            await api(i, `<b>✉️ Сообщение от мастера:</b>\n${t}`); // Отправка клиенту
+            if(ui !== MA) await api(MA, `🛠 <b>Лог:</b> ${ut} (ID:${ui}) -> клиенту <code>${i}</code>\nТекст: ${t}`); // Дубликат тебе (Лог)
+            alert("Отправлено!"); document.getElementById('rt').value = ""; // Сброс
         }
-        mask('b-phone'); mask('n-phone'); // Включаем маску для обоих полей телефона
-
-        function openS(s) { // Функция открытия формы (барбер или маникюр)
-            document.getElementById('hub-ui').style.display = 'none'; // Прячем главное меню
-            document.getElementById(s + '-ui').style.display = 'flex'; // Показываем нужную форму
-            document.body.className = s + '-mode'; // Меняем цвет фона страницы
-        }
-
-        function goB() { // Функция кнопки "Назад"
-            document.querySelectorAll('.container').forEach(c => c.style.display = 'none'); // Прячем все контейнеры
-            document.getElementById('hub-ui').style.display = 'flex'; // Показываем главное меню
-            document.body.className = ''; // Возвращаем стандартный фон
-        }
-
-        async function api(chat_id, text) { // Функция для отправки сообщений в Телеграм
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, { // Запрос к серверу Телеграм
-                method: 'POST', headers: {'Content-Type': 'application/json'}, // Указываем формат данных
-                body: JSON.stringify({chat_id, text, parse_mode: 'HTML'}) // Передаем ID чата и текст (в формате HTML)
-            });
-        }
-
-        async function sendB(type) { // Функция отправки записи на услугу
-            const p = type === 'Barber' ? 'b-' : 'n-'; // Определяем, из каких полей брать данные
-            const phone = document.getElementById(p+'phone').value; // Берем номер телефона
-            const master = document.getElementById(p+'master').value; // Берем выбранного мастера
-            const service = document.getElementById(p+'service').value; // Берем выбранную услугу
-            const date = document.getElementById(p+'date').value; // Берем дату и время
-
-            if (phone.length < 14 || !date) return alert("Заполните все поля!"); // Проверка: заполнены ли данные
-
-            const link = type === 'Barber' ? 'https://2gis.kz/almaty/geo/70000001057645936' : 'https://2gis.kz/almaty/geo/70000001081999536'; // Ссылка на 2GIS
-            const locName = type === 'Barber' ? 'SR Barbershop' : 'Cozy lab'; // Название места
-            
-            const msg = `🚀 <b>НОВАЯ ЗАПИСЬ (${type})</b>\n👤 ${uTag}\n📞 ${phone}\n👤 Мастер: ${master}\n✂️ ${service}\n📅 ${date.replace('T',' ')}\n🆔 <code>${uid}</code>`; // Текст для админов
-            
-            for(let a of ADMINS) await api(a, msg); // Отправляем уведомление всем админам из списка
-            await api(uid, `✅ <b>Вы успешно записаны!</b>\n👤 Мастер: ${master}\n📅 ${date.replace('T',' ')}\n📍 <a href="${link}">${locName} (2GIS)</a>`); // Отправляем подтверждение клиенту
-            
-            tg.showAlert("Запись успешно создана!"); // Показываем всплывающее окно
-            tg.close(); // Закрываем мини-приложение
-        }
-
-        async function reply() { // Функция ответа админа клиенту
-            const cid = document.getElementById('rid').value.trim(); // Берем ID клиента из поля
-            const txt = document.getElementById('rtxt').value.trim(); // Берем текст ответа
-            if(!cid || !txt) return alert("Введите ID и текст!"); // Проверка полей
-
-            await api(cid, `<b>✉️ Сообщение от мастера:</b>\n${txt}`); // Отправляем сообщение клиенту
-            
-            if(uid !== MAIN_ADMIN) { // Если пишет не главный админ, а помощник
-                await api(MAIN_ADMIN, `🛠 <b>ЛОГ ОТВЕТА:</b>\nОт: ${uTag} (ID: ${uid})\nКому (ID): ${cid}\nТекст: ${txt}`); // Отправляем копию тебе
-            }
-            
-            alert("Отправлено клиенту!"); // Уведомление об успехе
-            document.getElementById('rtxt').value = ""; // Очищаем поле текста
-        }
-    </script> </body> </html> ```
-
-
+    </script>
+</body>
+</html>
