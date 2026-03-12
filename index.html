@@ -7,7 +7,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <style>
-        /* [CSS: ФОН И ОСНОВА] */
+        /* [CSS: ФОН И СТИЛЬ] */
         body { 
             font-family: 'Segoe UI', Roboto, sans-serif; 
             background: linear-gradient(45deg, #0f172a, #1e293b, #0f172a, #1e3a8a);
@@ -25,12 +25,11 @@
         }
 
         .container { 
-            background: rgba(30, 41, 59, 0.75); backdrop-filter: blur(20px);
+            background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(20px);
             padding: 25px; border-radius: 30px; width: 100%; max-width: 360px; 
             border: 1px solid rgba(255, 255, 255, 0.1); box-sizing: border-box;
             display: none; flex-direction: column; align-items: center;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-            transition: all 0.4s ease;
         }
 
         /* [CSS: КАРТОЧКИ] */
@@ -48,28 +47,26 @@
         /* [CSS: ФОРМЫ] */
         h2 { text-align: center; margin: 0 0 20px 0; font-weight: 800; }
         .form-group { width: 100%; margin-bottom: 12px; display: flex; flex-direction: column; }
-        label { font-size: 11px; color: #94a3b8; margin-bottom: 6px; margin-left: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        label { font-size: 11px; color: #94a3b8; margin-bottom: 6px; margin-left: 8px; text-transform: uppercase; }
+        
         input, select { 
             width: 100%; padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); 
             background: rgba(15, 23, 42, 0.9); color: white; font-size: 16px; box-sizing: border-box;
             outline: none; transition: 0.3s;
         }
-        input:focus, select:focus { border-color: #38bdf8; }
+        input:focus { border-color: #38bdf8; }
 
         /* [CSS: КНОПКИ] */
         .btn-main { width: 100%; padding: 18px; border-radius: 16px; border: none; color: white; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.3s; }
         .btn-barber { background: linear-gradient(135deg, #0284c7, #38bdf8); }
         .btn-nails { background: linear-gradient(135deg, #db2777, #f472b6); }
-        .btn-main:active { transform: scale(0.97); }
-
+        
         .btn-back-styled {
             display: flex; align-items: center; justify-content: center;
             width: fit-content; margin: 20px auto 0; padding: 10px 22px;
             background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 50px; color: #94a3b8; font-size: 14px; cursor: pointer; transition: 0.3s;
         }
-        .btn-back-styled:hover { color: #fff; background: rgba(255, 255, 255, 0.15); }
-        .btn-back-styled span { margin-right: 8px; font-size: 18px; }
 
         .status-msg { font-size: 13px; text-align: center; color: #fbbf24; background: rgba(251, 191, 36, 0.1); padding: 12px; border-radius: 15px; margin-bottom: 20px; width: 100%; border: 1px solid rgba(251, 191, 36, 0.2); box-sizing: border-box; }
     </style>
@@ -82,23 +79,25 @@
         
         <div class="menu-card" onclick="openSection('barber')">
             <div class="icon">✂️</div>
-            <div class="text"><h3>Barbershop</h3><p>Стиль для мужчин</p></div>
+            <div class="text"><h3>Barbershop</h3><p>Санжар, Женыс</p></div>
         </div>
 
         <div class="menu-card" onclick="openSection('nails')">
             <div class="icon">💅</div>
-            <div class="text"><h3>Manicure</h3><p>Уход за ногтями</p></div>
+            <div class="text"><h3>Manicure</h3><p>Акмарал, Жулдыз</p></div>
         </div>
     </div>
 
     <div id="barber-ui" class="container">
         <h2 style="color: #38bdf8;">Barbershop</h2>
-        <div class="form-group"><label>Ваш номер</label><input type="tel" id="b-phone" placeholder="8 700 000 00 00" maxlength="15"></div>
+        <div class="form-group">
+            <label>Номер телефона</label>
+            <input type="tel" id="b-phone" value="8 " maxlength="15">
+        </div>
         <div class="form-group"><label>Выберите мастера</label>
             <select id="b-master">
-                <option value="Алекс">Санжар (Топ-Барбер)</option>
-                <option value="Дмитрий">Женыс (Стилист)</option>
-                <option value="Любой">К любому свободному</option>
+                <option value="Санжар">Санжар</option>
+                <option value="Женыс">Женыс</option>
             </select>
         </div>
         <div class="form-group"><label>Услуга</label>
@@ -115,12 +114,14 @@
 
     <div id="nails-ui" class="container">
         <h2 style="color: #f472b6;">Manicure</h2>
-        <div class="form-group"><label>Ваш номер</label><input type="tel" id="n-phone" placeholder="8 700 000 00 00" maxlength="15"></div>
+        <div class="form-group">
+            <label>Номер телефона</label>
+            <input type="tel" id="n-phone" value="8 " maxlength="15">
+        </div>
         <div class="form-group"><label>Выберите мастера</label>
             <select id="n-master">
-                <option value="Мария">Акмарал (Nail-дизайн)</option>
-                <option value="Елена">Жулдыз (Классика)</option>
-                <option value="Любая">К любой свободной</option>
+                <option value="Акмарал">Акмарал</option>
+                <option value="Жулдыз">Жулдыз</option>
             </select>
         </div>
         <div class="form-group"><label>Услуга</label>
@@ -136,7 +137,7 @@
     </div>
 
     <div id="admin-ui" class="container">
-        <h2>Мастер <span style="font-size: 11px; background: #f59e0b; padding: 4px 8px; border-radius: 8px; color: #000;">ADMIN</span></h2>
+        <h2>Мастер <span style="font-size: 11px; background: orange; padding: 4px 8px; border-radius: 8px; color: black;">ADMIN</span></h2>
         <div class="form-group"><label>ID клиента</label><input type="text" id="reply-id"></div>
         <div class="form-group"><label>Ответ</label><input type="text" id="reply-text"></div>
         <button class="btn-main" style="background: #10b981;" onclick="sendReply()">ОТВЕТИТЬ</button>
@@ -152,23 +153,39 @@
         const userId = String(tg.initDataUnsafe?.user?.id || "000");
         const userName = tg.initDataUnsafe?.user?.first_name || "Гость";
 
-        // Маска телефона
-        function formatPhone(e) {
-            let input = e.target.value.replace(/\D/g, '');
-            let formatted = '';
-            if (input.length > 0) {
-                formatted = input.substring(0, 1);
-                if (input.length > 1) formatted += ' ' + input.substring(1, 4);
-                if (input.length > 4) formatted += ' ' + input.substring(4, 7);
-                if (input.length > 7) formatted += ' ' + input.substring(7, 9);
-                if (input.length > 9) formatted += ' ' + input.substring(9, 11);
-            }
-            e.target.value = formatted;
-        }
-        document.getElementById('b-phone').addEventListener('input', formatPhone);
-        document.getElementById('n-phone').addEventListener('input', formatPhone);
+        /* [МАСКА ТЕЛЕФОНА: ФИКСАЦИЯ ЦИФРЫ 8] */
+        function setupPhoneMask(id) {
+            const input = document.getElementById(id);
+            
+            input.addEventListener('input', function() {
+                let val = input.value.replace(/\D/g, ''); // Чистим всё кроме цифр
+                
+                // Если пользователь стер всё, принудительно ставим 8
+                if (!val.startsWith('8')) {
+                    val = '8' + val;
+                }
+                
+                let formatted = '8';
+                if (val.length > 1) formatted += ' ' + val.substring(1, 4); // 700
+                if (val.length > 4) formatted += ' ' + val.substring(4, 7); // 672
+                if (val.length > 7) formatted += ' ' + val.substring(7, 9); // 11
+                if (val.length > 9) formatted += ' ' + val.substring(9, 11); // 86
+                
+                input.value = formatted;
+            });
 
-        // Статус
+            // Блокируем удаление первой цифры
+            input.addEventListener('keydown', function(e) {
+                if (input.selectionStart <= 1 && (e.key === 'Backspace' || e.key === 'Delete')) {
+                    e.preventDefault();
+                }
+            });
+        }
+
+        setupPhoneMask('b-phone');
+        setupPhoneMask('n-phone');
+
+        /* [ФУНКЦИИ] */
         function checkStatus() {
             const lastBooking = JSON.parse(localStorage.getItem(`activeBooking_${userId}`));
             if (lastBooking) {
@@ -180,7 +197,7 @@
                     const mins = Math.floor((diffMs % 3600000) / 60000);
                     document.getElementById('active-booking-status').innerHTML = `
                         <div class="status-msg">
-                            ⏳ <b>Запись к мастеру ${lastBooking.master}</b><br>
+                            ⏳ <b>Запись к: ${lastBooking.master}</b><br>
                             ${lastBooking.type}: ${lastBooking.service}<br>
                             Осталось: ${hours}ч ${mins}мин
                         </div>`;
@@ -189,12 +206,12 @@
         }
         checkStatus();
 
-        // Навигация
         function openSection(type) {
             document.getElementById('hub-ui').style.display = 'none';
             const next = (type === 'barber') ? document.getElementById('barber-ui') : document.getElementById('nails-ui');
             next.style.display = 'flex';
         }
+
         function goBack() {
             document.getElementById('barber-ui').style.display = 'none';
             document.getElementById('nails-ui').style.display = 'none';
@@ -206,7 +223,6 @@
             document.getElementById('admin-ui').style.display = 'flex';
         }
 
-        // Запись
         async function sendBooking(category) {
             const prefix = category === 'Barber' ? 'b-' : 'n-';
             const phone = document.getElementById(prefix + 'phone').value;
@@ -214,11 +230,11 @@
             const service = document.getElementById(prefix + 'service').value;
             const dateInput = document.getElementById(prefix + 'date').value;
 
-            if (phone.length < 15 || !dateInput) return alert("Заполните данные!");
+            if (phone.length < 14 || !dateInput) return alert("Введите номер телефона полностью!");
 
             localStorage.setItem(`activeBooking_${userId}`, JSON.stringify({ type: category, service: service, master: master, date: dateInput }));
 
-            const adminMsg = `🚀 <b>НОВАЯ ЗАПИСЬ [${category.toUpperCase()}]</b>\n━━━━━━━━━━━━━\n👤 <b>Клиент:</b> ${userName}\n📞 <b>Тел:</b> ${phone}\n👤 <b>Мастер:</b> <u>${master}</u>\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${dateInput.replace('T', ' ')}\n🆔 <b>ID:</b> <code>${userId}</code>`;
+            const adminMsg = `🚀 <b>НОВАЯ ЗАПИСЬ [${category.toUpperCase()}]</b>\n━━━━━━━━━━━━━\n👤 <b>Клиент:</b> ${userName}\n📞 <b>Тел:</b> ${phone}\n👤 <b>Мастер:</b> ${master}\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${dateInput.replace('T', ' ')}\n🆔 <b>ID:</b> <code>${userId}</code>`;
             
             try {
                 for (let id of ADMIN_LIST) {
@@ -227,9 +243,9 @@
                         body: JSON.stringify({ chat_id: id, text: adminMsg, parse_mode: 'HTML' })
                     });
                 }
-                tg.showAlert(`Вы записаны к мастеру ${master}!`);
+                tg.showAlert(`Готово! Мастер ${master} ждет вас.`);
                 tg.close();
-            } catch (e) { alert("Ошибка!"); }
+            } catch (e) { alert("Ошибка отправки!"); }
         }
 
         async function sendReply() {
