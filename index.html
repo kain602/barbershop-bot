@@ -10,7 +10,8 @@
         :root {
             --bg-main: linear-gradient(45deg, #0f172a, #1e293b, #0f172a);
             --bg-barber: linear-gradient(135deg, #020617, #0f172a, #1e293b);
-            --bg-nails: linear-gradient(135deg, #fce7f3, #fbcfe8, #f472b6);
+            /* Более темный, благородный розовый */
+            --bg-nails: linear-gradient(135deg, #4c0519, #831843, #9d174d);
         }
 
         body { 
@@ -19,26 +20,18 @@
             color: #f8fafc; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 20px; min-height: 100vh; margin: 0;
-            transition: background 0.8s ease; /* Плавная смена фона */
+            transition: background 0.6s ease;
         }
 
-        /* Классы для смены фона через JS */
-        body.barber-mode { background: var(--bg-barber); color: #f8fafc; }
-        body.nails-mode { background: var(--bg-nails); color: #1e293b; }
+        body.barber-mode { background: var(--bg-barber); }
+        body.nails-mode { background: var(--bg-nails); }
 
         .container { 
-            background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(20px);
+            background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px);
             padding: 25px; border-radius: 30px; width: 100%; max-width: 360px; 
             border: 1px solid rgba(255, 255, 255, 0.1); box-sizing: border-box;
             display: none; flex-direction: column; align-items: center;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        /* Адаптация контейнера под женственный стиль */
-        body.nails-mode .container { 
-            background: rgba(255, 255, 255, 0.4); 
-            border: 1px solid rgba(219, 39, 119, 0.2);
-            color: #831843;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
         }
 
         .menu-card {
@@ -53,16 +46,12 @@
 
         h2 { text-align: center; margin: 0 0 20px 0; font-weight: 800; }
         .form-group { width: 100%; margin-bottom: 12px; display: flex; flex-direction: column; }
-        label { font-size: 11px; margin-bottom: 6px; margin-left: 8px; text-transform: uppercase; opacity: 0.8; }
+        label { font-size: 11px; color: #94a3b8; margin-bottom: 6px; margin-left: 8px; text-transform: uppercase; }
         
         input, select { 
             width: 100%; padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); 
-            background: rgba(15, 23, 42, 0.8); color: white; font-size: 16px; box-sizing: border-box;
+            background: rgba(15, 23, 42, 0.9); color: white; font-size: 16px; box-sizing: border-box;
             outline: none;
-        }
-
-        body.nails-mode input, body.nails-mode select {
-            background: rgba(255, 255, 255, 0.8); color: #831843; border: 1px solid #f472b6;
         }
 
         .btn-main { 
@@ -70,10 +59,11 @@
             color: white; font-size: 16px; font-weight: 700; cursor: pointer; 
             margin-top: 10px; transition: 0.3s;
         }
-        .btn-barber { background: linear-gradient(135deg, #0f172a, #334155); border: 1px solid #38bdf8; }
-        .btn-nails { background: linear-gradient(135deg, #db2777, #f472b6); }
+        .btn-barber { background: linear-gradient(135deg, #0ea5e9, #2563eb); }
+        .btn-nails { background: linear-gradient(135deg, #be185d, #9d174d); }
+        .btn-admin { background: linear-gradient(135deg, #10b981, #059669); }
 
-        .btn-back { margin-top: 20px; font-size: 14px; cursor: pointer; opacity: 0.6; }
+        .btn-back { margin-top: 20px; color: #94a3b8; font-size: 14px; cursor: pointer; }
     </style>
 </head>
 <body id="body">
@@ -120,7 +110,7 @@
     </div>
 
     <div id="nails-ui" class="container">
-        <h2 style="color: #db2777;">Manicure</h2>
+        <h2 style="color: #f472b6;">Manicure</h2>
         <div class="form-group">
             <label>Контактный телефон</label>
             <input type="tel" id="n-phone" value="8 " maxlength="15">
@@ -148,23 +138,46 @@
         <div class="btn-back" onclick="goBack()">← Назад</div>
     </div>
 
+    <div id="admin-ui" class="container">
+        <h2>Мастер <span style="font-size: 12px; background: #f59e0b; color: #000; padding: 2px 6px; border-radius: 5px;">Admin</span></h2>
+        <div class="form-group">
+            <label>ID клиента из сообщения</label>
+            <input type="text" id="reply-id" placeholder="Напр: 8224738624">
+        </div>
+        <div class="form-group">
+            <label>Текст ответа</label>
+            <input type="text" id="reply-text" placeholder="Ваш ответ клиенту...">
+        </div>
+        <button class="btn-main btn-admin" onclick="sendReply()">ОТПРАВИТЬ ОТВЕТ</button>
+        <p style="font-size: 10px; color: #94a3b8; margin-top: 15px; text-align: center;">Клиент получит сообщение от имени бота</p>
+    </div>
+
     <script>
         const tg = window.Telegram.WebApp;
+        tg.expand();
         const body = document.getElementById('body');
+
         const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y";
-        const ADMIN_ID = "1384228457";
+        const ADMIN_ID = "1384228457"; // Твой ID
+
+        const userId = String(tg.initDataUnsafe?.user?.id || "");
+        const userName = tg.initDataUnsafe?.user?.first_name || "Клиент";
+
+        // Если зашел админ — сразу в админку
+        if (userId === ADMIN_ID) {
+            document.getElementById('hub-ui').style.display = 'none';
+            document.getElementById('admin-ui').style.display = 'flex';
+        }
 
         function openSection(s) {
             document.getElementById('hub-ui').style.display = 'none';
             document.getElementById(s + '-ui').style.display = 'flex';
-            // Меняем фон
             body.className = s + '-mode';
         }
 
         function goBack() {
             document.querySelectorAll('.container').forEach(c => c.style.display = 'none');
             document.getElementById('hub-ui').style.display = 'flex';
-            // Возвращаем стандартный фон
             body.className = '';
         }
 
@@ -175,26 +188,43 @@
             const service = document.getElementById(p + 'service').value;
             const date = document.getElementById(p + 'date').value;
 
-            if (phone.length < 14 || !date) return alert("Заполните данные!");
+            if (phone.length < 14 || !date) return alert("Заполните данные визита!");
 
             const timeStr = date.replace('T', ' ');
-            const adminMsg = `🚀 <b>НОВАЯ ЗАПИСЬ (${type})</b>\n👤 Клиент: ${tg.initDataUnsafe?.user?.first_name || 'Гость'}\n📞 Тел: ${phone}\n👤 Мастер: ${master}\n✂️ Услуга: ${service}\n📅 Время: ${timeStr}\n🆔 ID: <code>${tg.initDataUnsafe?.user?.id}</code>`;
-            const clientMsg = `✅ <b>ВЫ ЗАПИСАНЫ!</b>\n👤 Мастер: ${master}\n✂️ Услуга: ${service}\n📅 Время: ${timeStr}\n🔔 Напомним за 30 минут!`;
+            const adminMsg = `🚀 <b>НОВАЯ ЗАПИСЬ (${type})</b>\n━━━━━━━━━━━━━\n👤 <b>Клиент:</b> ${userName}\n📞 <b>Тел:</b> ${phone}\n👤 <b>Мастер:</b> ${master}\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${timeStr}\n🆔 <b>ID:</b> <code>${userId}</code>`;
+            const clientMsg = `✅ <b>ВЫ УСПЕШНО ЗАПИСАНЫ!</b>\n━━━━━━━━━━━━━\n👤 <b>Мастер:</b> ${master}\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${timeStr}\n━━━━━━━━━━━━━\n🔔 Бот напомнит вам за 30 минут!`;
 
             try {
+                // Админу
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: ADMIN_ID, text: adminMsg, parse_mode: 'HTML' })
                 });
-                if (tg.initDataUnsafe?.user?.id) {
+                // Клиенту
+                if (userId) {
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ chat_id: tg.initDataUnsafe.user.id, text: clientMsg, parse_mode: 'HTML' })
+                        body: JSON.stringify({ chat_id: userId, text: clientMsg, parse_mode: 'HTML' })
                     });
                 }
-                tg.showAlert("Запись подтверждена!");
+                tg.showAlert("Запись успешно оформлена!");
                 tg.close();
             } catch (e) { alert("Ошибка!"); }
+        }
+
+        async function sendReply() {
+            const cid = document.getElementById('reply-id').value.trim();
+            const txt = document.getElementById('reply-text').value.trim();
+            if (!cid || !txt) return alert("Введите ID и текст сообщения!");
+
+            try {
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: cid, text: `<b>✉️ Сообщение от мастера:</b>\n${txt}`, parse_mode: 'HTML' })
+                });
+                alert("Ответ успешно отправлен клиенту!");
+                document.getElementById('reply-text').value = "";
+            } catch (e) { alert("Ошибка при отправке!"); }
         }
     </script>
 </body>
