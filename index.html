@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beauty Hub Management</title>
+    <title>Beauty Hub Admin System</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <style>
@@ -28,7 +28,7 @@
             padding: 25px; border-radius: 30px; width: 100%; max-width: 360px; 
             border: 1px solid rgba(255, 255, 255, 0.1); box-sizing: border-box;
             display: none; flex-direction: column; align-items: center;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); margin-bottom: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
         }
 
         .menu-card {
@@ -39,7 +39,6 @@
         }
         .menu-card:active { transform: scale(0.95); }
         .menu-card .icon { font-size: 32px; margin-right: 20px; }
-        .menu-card h3 { margin: 0; font-size: 20px; }
 
         h2 { text-align: center; margin: 0 0 20px 0; font-weight: 800; }
         .form-group { width: 100%; margin-bottom: 12px; display: flex; flex-direction: column; }
@@ -47,8 +46,7 @@
         
         input, select { 
             width: 100%; padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); 
-            background: rgba(15, 23, 42, 0.9); color: white; font-size: 16px; box-sizing: border-box;
-            outline: none;
+            background: rgba(15, 23, 42, 0.9); color: white; font-size: 16px; box-sizing: border-box; outline: none;
         }
 
         .btn-main { 
@@ -59,13 +57,8 @@
         .btn-barber { background: linear-gradient(135deg, #0ea5e9, #2563eb); }
         .btn-nails { background: linear-gradient(135deg, #be185d, #9d174d); }
         .btn-admin { background: linear-gradient(135deg, #10b981, #059669); }
-        .btn-manage { background: #334155; font-size: 12px; padding: 10px; }
 
         .btn-back { margin-top: 20px; color: #94a3b8; font-size: 14px; cursor: pointer; }
-        
-        /* Список админов */
-        #admin-list-display { width: 100%; margin-top: 10px; font-size: 12px; color: #fbbf24; }
-        .admin-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
 <body id="body">
@@ -80,18 +73,15 @@
         <h2 style="color: #38bdf8;">Barbershop</h2>
         <div class="form-group"><label>Контактный телефон</label><input type="tel" id="b-phone" value="8 " maxlength="15"></div>
         <div class="form-group">
-            <label>Выберите мастера</label>
             <select id="b-master"><option value="Санжар">Санжар</option><option value="Женыс">Женыс</option></select>
         </div>
         <div class="form-group">
-            <label>Услуга</label>
             <select id="b-service">
                 <option>Мужская стрижка — 4 000 ₸</option>
                 <option>Стрижка бороды — 2 500 ₸</option>
-                <option>Комплекс — 6 000 ₸</option>
             </select>
         </div>
-        <div class="form-group"><label>Дата и время</label><input type="datetime-local" id="b-date"></div>
+        <div class="form-group"><input type="datetime-local" id="b-date"></div>
         <button class="btn-main btn-barber" onclick="sendBooking('Barber')">ЗАПИСАТЬСЯ</button>
         <div class="btn-back" onclick="goBack()">← Назад</div>
     </div>
@@ -100,34 +90,24 @@
         <h2 style="color: #f472b6;">Manicure</h2>
         <div class="form-group"><label>Контактный телефон</label><input type="tel" id="n-phone" value="8 " maxlength="15"></div>
         <div class="form-group">
-            <label>Выберите мастера</label>
             <select id="n-master"><option value="Акмарал">Акмарал</option><option value="Жулдыз">Жулдыз</option></select>
         </div>
         <div class="form-group">
-            <label>Услуга</label>
             <select id="n-service">
                 <option>Маникюр + Гель — 5 000 ₸</option>
-                <option>Наращивание — 8 000 ₸</option>
                 <option>Педикюр — 6 000 ₸</option>
             </select>
         </div>
-        <div class="form-group"><label>Дата и время</label><input type="datetime-local" id="n-date"></div>
+        <div class="form-group"><input type="datetime-local" id="n-date"></div>
         <button class="btn-main btn-nails" onclick="sendBooking('Manicure')">ЗАПИСАТЬСЯ</button>
         <div class="btn-back" onclick="goBack()">← Назад</div>
     </div>
 
     <div id="admin-ui" class="container">
         <h2>Мастер <span style="font-size: 10px; background: #f59e0b; color: #000; padding: 2px 6px; border-radius: 4px;">Control</span></h2>
-        <div class="form-group"><label>ID клиента</label><input type="text" id="reply-id" placeholder="ID"></div>
+        <div class="form-group"><label>ID или Тег клиента</label><input type="text" id="reply-id" placeholder="ID (числа)"></div>
         <div class="form-group"><label>Текст ответа</label><input type="text" id="reply-text" placeholder="Ваш ответ..."></div>
         <button class="btn-main btn-admin" onclick="sendReply()">ОТПРАВИТЬ ОТВЕТ</button>
-
-        <div id="super-admin-zone" style="display: none; width: 100%; margin-top: 25px; padding-top: 20px; border-top: 1px dashed rgba(255,255,255,0.2);">
-            <h3 style="font-size: 14px; color: #fbbf24;">Управление админами</h3>
-            <div class="form-group"><input type="text" id="new-admin-id" placeholder="Введите ID мастера"></div>
-            <button class="btn-main btn-manage" onclick="addNewAdmin()">+ Добавить права админа</button>
-            <div id="admin-list-display"></div>
-        </div>
     </div>
 
     <script>
@@ -136,27 +116,22 @@
         const body = document.getElementById('body');
         const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y";
         
-        // Твой главный ID
-        const MAIN_ADMIN_ID = "1384228457";
-
-        // Загрузка списка админов из памяти
-        let dynamicAdmins = JSON.parse(localStorage.getItem('beauty_admins')) || [MAIN_ADMIN_ID];
+        // --- ГЛАВНЫЕ НАСТРОЙКИ ---
+        const MAIN_ADMIN_ID = "1384228457"; 
+        // Впиши сюда ID своего второго аккаунта и ID мастеров:
+        const ADMIN_LIST = ["1384228457", "ТВОЙ_ВТОРОЙ_ID", "ID_МАСТЕРА"]; 
 
         const userId = String(tg.initDataUnsafe?.user?.id || "");
         const userName = tg.initDataUnsafe?.user?.first_name || "Клиент";
         const userTag = tg.initDataUnsafe?.user?.username ? "@" + tg.initDataUnsafe.user.username : "нет тега";
 
-        // Проверка доступа
-        if (dynamicAdmins.includes(userId)) {
+        // Проверка прав на админку
+        if (ADMIN_LIST.includes(userId)) {
             document.getElementById('hub-ui').style.display = 'none';
             document.getElementById('admin-ui').style.display = 'flex';
-            if (userId === MAIN_ADMIN_ID) {
-                document.getElementById('super-admin-zone').style.display = 'block';
-                updateAdminListUI();
-            }
         }
 
-        // Маска телефона
+        // Маска 8 700...
         function setupPhoneMask(id) {
             const input = document.getElementById(id);
             input.addEventListener('input', () => {
@@ -184,36 +159,6 @@
             body.className = '';
         }
 
-        // Управление админами
-        function addNewAdmin() {
-            const id = document.getElementById('new-admin-id').value.trim();
-            if (id && !dynamicAdmins.includes(id)) {
-                dynamicAdmins.push(id);
-                localStorage.setItem('beauty_admins', JSON.stringify(dynamicAdmins));
-                updateAdminListUI();
-                alert("Мастер добавлен! Пусть он перезагрузит бота.");
-                // Отчет тебе в бот
-                fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: MAIN_ADMIN_ID, text: `👑 <b>Новый админ:</b> <code>${id}</code> добавлен вами.`, parse_mode: 'HTML' })
-                });
-            }
-        }
-
-        function updateAdminListUI() {
-            const display = document.getElementById('admin-list-display');
-            display.innerHTML = '<b>Активные ID:</b><br>';
-            dynamicAdmins.forEach(id => {
-                display.innerHTML += `<div class="admin-item">ID: ${id} ${id !== MAIN_ADMIN_ID ? `<span style="color:red" onclick="removeAdmin('${id}')">[X]</span>` : '(Вы)'}</div>`;
-            });
-        }
-
-        function removeAdmin(id) {
-            dynamicAdmins = dynamicAdmins.filter(a => a !== id);
-            localStorage.setItem('beauty_admins', JSON.stringify(dynamicAdmins));
-            updateAdminListUI();
-        }
-
         async function sendBooking(type) {
             const p = type === 'Barber' ? 'b-' : 'n-';
             const phone = document.getElementById(p + 'phone').value;
@@ -230,43 +175,54 @@
             const clientMsg = `✅ <b>ВЫ ЗАПИСАНЫ!</b>\n👤 Мастер: ${master}\n✂️ ${service}\n📅 ${date.replace('T', ' ')}\n${addressLink}\n🔔 Напомним за 30 минут!`;
 
             try {
-                // Всем админам
-                for (let admin of dynamicAdmins) {
+                // Уведомляем ВСЕХ админов из списка
+                for (let adminId of ADMIN_LIST) {
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ chat_id: admin, text: adminMsg, parse_mode: 'HTML' })
+                        body: JSON.stringify({ chat_id: adminId, text: adminMsg, parse_mode: 'HTML' })
                     });
                 }
+                // Уведомляем клиента
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: userId, text: clientMsg, parse_mode: 'HTML' })
                 });
+                tg.showAlert("Запись подтверждена!");
                 tg.close();
-            } catch (e) { alert("Ошибка!"); }
+            } catch (e) { alert("Ошибка отправки заказа."); }
         }
 
         async function sendReply() {
-            const cid = document.getElementById('reply-id').value.trim();
-            const txt = document.getElementById('reply-text').value.trim();
-            if (!cid || !txt) return alert("Заполните ID и текст!");
+            const targetId = document.getElementById('reply-id').value.trim();
+            const messageText = document.getElementById('reply-text').value.trim();
+            if (!targetId || !messageText) return alert("Введите ID клиента и текст!");
 
-            const log = `🛠 <b>ОТВЕТ АДМИНА</b>\n👤 От: ${userName} (${userTag})\n🆔 ID админа: <code>${userId}</code>\n\n👤 Кому (ID): <code>${cid}</code>\n💬 Текст: ${txt}`;
+            // Сообщение клиенту
+            const toClient = `<b>✉️ Сообщение от мастера:</b>\n${messageText}`;
+            
+            // Лог тебе (Главному админу)
+            const logMsg = `🛠 <b>ОТВЕТ АДМИНА</b>\n━━━━━━━━━━━━━\n✍️ <b>Отправил:</b> ${userName} (${userTag})\n🆔 <b>ID админа:</b> <code>${userId}</code>\n\n👤 <b>Кому (ID клиента):</b> <code>${targetId}</code>\n💬 <b>Текст:</b> ${messageText}`;
 
             try {
+                // 1. Отправка клиенту
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: cid, text: `<b>✉️ Ответ:</b>\n${txt}`, parse_mode: 'HTML' })
+                    body: JSON.stringify({ chat_id: targetId, text: toClient, parse_mode: 'HTML' })
                 });
-                // Дубликат тебе
+
+                // 2. Дубликат тебе (если отправил не ты сам себе)
                 if (userId !== MAIN_ADMIN_ID) {
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ chat_id: MAIN_ADMIN_ID, text: log, parse_mode: 'HTML' })
+                        body: JSON.stringify({ chat_id: MAIN_ADMIN_ID, text: logMsg, parse_mode: 'HTML' })
                     });
                 }
-                alert("Отправлено!");
+
+                alert("Сообщение успешно отправлено!");
                 document.getElementById('reply-text').value = "";
-            } catch (e) { alert("Ошибка!"); }
+            } catch (e) { 
+                alert("Ошибка! Проверьте правильность ID клиента."); 
+            }
         }
     </script>
 </body>
