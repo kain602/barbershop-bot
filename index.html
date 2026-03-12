@@ -3,98 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beauty Hub Premium</title>
+    <title>Beauty Hub</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <style>
+        :root {
+            --bg-main: linear-gradient(45deg, #0f172a, #1e293b, #0f172a);
+            --bg-barber: linear-gradient(135deg, #020617, #0f172a, #1e293b);
+            --bg-nails: linear-gradient(135deg, #fce7f3, #fbcfe8, #f472b6);
+        }
+
         body { 
             font-family: 'Segoe UI', sans-serif; 
-            background: linear-gradient(45deg, #0f172a, #1e293b, #0f172a, #1e3a8a);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            background: var(--bg-main);
             color: #f8fafc; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 20px; min-height: 100vh; margin: 0;
+            transition: background 0.8s ease; /* Плавная смена фона */
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
+        /* Классы для смены фона через JS */
+        body.barber-mode { background: var(--bg-barber); color: #f8fafc; }
+        body.nails-mode { background: var(--bg-nails); color: #1e293b; }
 
         .container { 
-            background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(20px);
+            background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(20px);
             padding: 25px; border-radius: 30px; width: 100%; max-width: 360px; 
             border: 1px solid rgba(255, 255, 255, 0.1); box-sizing: border-box;
             display: none; flex-direction: column; align-items: center;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Адаптация контейнера под женственный стиль */
+        body.nails-mode .container { 
+            background: rgba(255, 255, 255, 0.4); 
+            border: 1px solid rgba(219, 39, 119, 0.2);
+            color: #831843;
         }
 
         .menu-card {
             width: 100%; background: rgba(255, 255, 255, 0.05);
-            margin-bottom: 15px; padding: 20px; border-radius: 24px;
+            margin-bottom: 15px; padding: 25px; border-radius: 24px;
             display: flex; align-items: center; cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1); transition: 0.3s;
         }
         .menu-card:active { transform: scale(0.95); }
-        .menu-card .icon { font-size: 38px; margin-right: 18px; }
+        .menu-card .icon { font-size: 32px; margin-right: 20px; }
+        .menu-card h3 { margin: 0; font-size: 20px; }
 
-        h2 { text-align: center; margin: 0 0 20px 0; font-weight: 800; color: #38bdf8; }
+        h2 { text-align: center; margin: 0 0 20px 0; font-weight: 800; }
         .form-group { width: 100%; margin-bottom: 12px; display: flex; flex-direction: column; }
-        label { font-size: 11px; color: #94a3b8; margin-bottom: 6px; margin-left: 8px; text-transform: uppercase; }
+        label { font-size: 11px; margin-bottom: 6px; margin-left: 8px; text-transform: uppercase; opacity: 0.8; }
         
         input, select { 
             width: 100%; padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); 
-            background: rgba(15, 23, 42, 0.9); color: white; font-size: 16px; box-sizing: border-box;
+            background: rgba(15, 23, 42, 0.8); color: white; font-size: 16px; box-sizing: border-box;
             outline: none;
         }
-        input:focus { border-color: #38bdf8; }
+
+        body.nails-mode input, body.nails-mode select {
+            background: rgba(255, 255, 255, 0.8); color: #831843; border: 1px solid #f472b6;
+        }
 
         .btn-main { 
             width: 100%; padding: 18px; border-radius: 16px; border: none; 
             color: white; font-size: 16px; font-weight: 700; cursor: pointer; 
             margin-top: 10px; transition: 0.3s;
-            background: linear-gradient(135deg, #0284c7, #38bdf8);
         }
-        .btn-main:active { transform: scale(0.97); }
+        .btn-barber { background: linear-gradient(135deg, #0f172a, #334155); border: 1px solid #38bdf8; }
+        .btn-nails { background: linear-gradient(135deg, #db2777, #f472b6); }
 
-        .btn-back {
-            margin-top: 20px; color: #94a3b8; font-size: 14px; cursor: pointer;
-        }
-
-        .status-msg { 
-            font-size: 13px; text-align: center; color: #fbbf24; 
-            background: rgba(251, 191, 36, 0.1); padding: 12px; 
-            border-radius: 15px; margin-bottom: 20px; width: 100%; 
-            border: 1px solid rgba(251, 191, 36, 0.2); box-sizing: border-box; 
-        }
+        .btn-back { margin-top: 20px; font-size: 14px; cursor: pointer; opacity: 0.6; }
     </style>
 </head>
-<body>
+<body id="body">
 
     <div id="hub-ui" class="container" style="display: flex;">
         <h2 style="color: #fff;">Beauty Hub</h2>
-        <div id="active-booking-status"></div> 
         <div class="menu-card" onclick="openSection('barber')">
             <div class="icon">✂️</div>
-            <div><h3>Barbershop</h3><p>Санжар, Женыс</p></div>
+            <div><h3>Barbershop</h3></div>
         </div>
         <div class="menu-card" onclick="openSection('nails')">
             <div class="icon">💅</div>
-            <div><h3>Manicure</h3><p>Акмарал, Жулдыз</p></div>
+            <div><h3>Manicure</h3></div>
         </div>
     </div>
 
     <div id="barber-ui" class="container">
-        <h2>Barbershop</h2>
+        <h2 style="color: #38bdf8;">Barbershop</h2>
         <div class="form-group">
-            <label>Ваш номер</label>
+            <label>Контактный телефон</label>
             <input type="tel" id="b-phone" value="8 " maxlength="15">
         </div>
         <div class="form-group">
-            <label>Мастер</label>
+            <label>Выберите мастера</label>
             <select id="b-master">
                 <option value="Санжар">Санжар</option>
                 <option value="Женыс">Женыс</option>
@@ -112,18 +115,18 @@
             <label>Дата и время</label>
             <input type="datetime-local" id="b-date">
         </div>
-        <button class="btn-main" onclick="sendBooking('Barber')">ЗАПИСАТЬСЯ</button>
+        <button class="btn-main btn-barber" onclick="sendBooking('Barber')">ЗАПИСАТЬСЯ</button>
         <div class="btn-back" onclick="goBack()">← Назад</div>
     </div>
 
     <div id="nails-ui" class="container">
-        <h2 style="color: #f472b6;">Manicure</h2>
+        <h2 style="color: #db2777;">Manicure</h2>
         <div class="form-group">
-            <label>Ваш номер</label>
+            <label>Контактный телефон</label>
             <input type="tel" id="n-phone" value="8 " maxlength="15">
         </div>
         <div class="form-group">
-            <label>Мастер</label>
+            <label>Выберите мастера</label>
             <select id="n-master">
                 <option value="Акмарал">Акмарал</option>
                 <option value="Жулдыз">Жулдыз</option>
@@ -141,115 +144,57 @@
             <label>Дата и время</label>
             <input type="datetime-local" id="n-date">
         </div>
-        <button class="btn-main" style="background: linear-gradient(135deg, #db2777, #f472b6);" onclick="sendBooking('Manicure')">ЗАПИСАТЬСЯ</button>
+        <button class="btn-main btn-nails" onclick="sendBooking('Manicure')">ЗАПИСАТЬСЯ</button>
         <div class="btn-back" onclick="goBack()">← Назад</div>
-    </div>
-
-    <div id="admin-ui" class="container">
-        <h2>Мастер <span style="font-size: 12px; background: #f59e0b; color: #000; padding: 2px 6px; border-radius: 5px;">Admin</span></h2>
-        <div class="form-group"><label>ID клиента</label><input type="text" id="reply-id" placeholder="Вставь ID"></div>
-        <div class="form-group"><label>Ответ</label><input type="text" id="reply-text" placeholder="Текст ответа"></div>
-        <button class="btn-main" style="background: #10b981;" onclick="sendReply()">ОТПРАВИТЬ ОТВЕТ</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand();
-
+        const body = document.getElementById('body');
         const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y";
         const ADMIN_ID = "1384228457";
-
-        const userId = tg.initDataUnsafe?.user?.id;
-        const userName = tg.initDataUnsafe?.user?.first_name || "Гость";
-
-        // Если зашел админ, показываем только админку
-        if (String(userId) === ADMIN_ID) {
-            document.getElementById('hub-ui').style.display = 'none';
-            document.getElementById('admin-ui').style.display = 'flex';
-        }
-
-        // Маска 8...
-        function setupMask(id) {
-            const el = document.getElementById(id);
-            el.addEventListener('input', () => {
-                let v = el.value.replace(/\D/g, '');
-                if (!v.startsWith('8')) v = '8' + v;
-                let f = '8';
-                if (v.length > 1) f += ' ' + v.substring(1, 4);
-                if (v.length > 4) f += ' ' + v.substring(4, 7);
-                if (v.length > 7) f += ' ' + v.substring(7, 9);
-                if (v.length > 9) f += ' ' + v.substring(9, 11);
-                el.value = f;
-            });
-            el.addEventListener('keydown', (e) => {
-                if (el.selectionStart <= 1 && (e.key === 'Backspace' || e.key === 'Delete')) e.preventDefault();
-            });
-        }
-        setupMask('b-phone');
-        setupMask('n-phone');
 
         function openSection(s) {
             document.getElementById('hub-ui').style.display = 'none';
             document.getElementById(s + '-ui').style.display = 'flex';
+            // Меняем фон
+            body.className = s + '-mode';
         }
+
         function goBack() {
             document.querySelectorAll('.container').forEach(c => c.style.display = 'none');
             document.getElementById('hub-ui').style.display = 'flex';
+            // Возвращаем стандартный фон
+            body.className = '';
         }
 
         async function sendBooking(type) {
             const p = type === 'Barber' ? 'b-' : 'n-';
             const phone = document.getElementById(p + 'phone').value;
-            const master = document.getElementById(p + 'master').value; // Берем имя мастера
+            const master = document.getElementById(p + 'master').value;
             const service = document.getElementById(p + 'service').value;
             const date = document.getElementById(p + 'date').value;
 
-            if (phone.length < 14 || !date) return alert("Заполните все поля!");
+            if (phone.length < 14 || !date) return alert("Заполните данные!");
 
             const timeStr = date.replace('T', ' ');
-
-            // ТЕКСТ ДЛЯ АДМИНА
-            const adminMsg = `🚀 <b>НОВАЯ ЗАПИСЬ (${type})</b>\n━━━━━━━━━━━━━\n👤 <b>Клиент:</b> ${userName}\n📞 <b>Тел:</b> ${phone}\n👤 <b>Мастер:</b> ${master}\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${timeStr}\n🆔 <b>ID:</b> <code>${userId}</code>`;
-
-            // ТЕКСТ ДЛЯ КЛИЕНТА (С МАСТЕРОМ!)
-            const clientMsg = `✅ <b>ВЫ ЗАПИСАНЫ!</b>\n━━━━━━━━━━━━━\n👤 <b>Мастер:</b> ${master}\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${timeStr}\n━━━━━━━━━━━━━\n🔔 Бот напомнит вам за 30 минут до начала!`;
+            const adminMsg = `🚀 <b>НОВАЯ ЗАПИСЬ (${type})</b>\n👤 Клиент: ${tg.initDataUnsafe?.user?.first_name || 'Гость'}\n📞 Тел: ${phone}\n👤 Мастер: ${master}\n✂️ Услуга: ${service}\n📅 Время: ${timeStr}\n🆔 ID: <code>${tg.initDataUnsafe?.user?.id}</code>`;
+            const clientMsg = `✅ <b>ВЫ ЗАПИСАНЫ!</b>\n👤 Мастер: ${master}\n✂️ Услуга: ${service}\n📅 Время: ${timeStr}\n🔔 Напомним за 30 минут!`;
 
             try {
-                // Отправка админу
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: ADMIN_ID, text: adminMsg, parse_mode: 'HTML' })
                 });
-
-                // Отправка клиенту
-                if (userId) {
+                if (tg.initDataUnsafe?.user?.id) {
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ chat_id: userId, text: clientMsg, parse_mode: 'HTML' })
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ chat_id: tg.initDataUnsafe.user.id, text: clientMsg, parse_mode: 'HTML' })
                     });
                 }
-
-                tg.showAlert("Вы успешно записаны! Мастер " + master + " ждет вас.");
+                tg.showAlert("Запись подтверждена!");
                 tg.close();
-            } catch (e) {
-                alert("Ошибка при отправке записи.");
-            }
-        }
-
-        async function sendReply() {
-            const id = document.getElementById('reply-id').value;
-            const txt = document.getElementById('reply-text').value;
-            if (!id || !txt) return alert("Заполни ID и текст!");
-            
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: id, text: `<b>✉️ Ответ от мастера:</b>\n${txt}`, parse_mode: 'HTML' })
-            });
-            alert("Ответ отправлен клиенту!");
-            document.getElementById('reply-text').value = "";
+            } catch (e) { alert("Ошибка!"); }
         }
     </script>
 </body>
