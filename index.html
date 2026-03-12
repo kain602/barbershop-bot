@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beauty Hub Premium</title>
-    
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <style>
-        /* [CSS: ФОН] Динамический градиент и общие стили страницы */
+        /* [CSS: ОСНОВА] Анимированный фон */
         body { 
             font-family: 'Segoe UI', Roboto, sans-serif; 
             background: linear-gradient(45deg, #0f172a, #1e293b, #0f172a, #1e3a8a);
@@ -25,65 +24,95 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* [CSS: КОНТЕЙНЕРЫ] Стилизация карточек с эффектом матового стекла */
+        /* [CSS: КОНТЕЙНЕРЫ] Эффект стекла */
         .container { 
             background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(15px);
             padding: 25px; border-radius: 28px; width: 100%; max-width: 360px; 
             border: 1px solid rgba(255, 255, 255, 0.1); box-sizing: border-box;
             display: none; flex-direction: column; align-items: center;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* [CSS: ХАБ ВЫБОРА] Дизайн кнопок выбора Barber или Manicure */
+        /* [CSS: КАРТОЧКИ ВЫБОРА] Добавлены анимации движения */
         .menu-card {
             width: 100%; background: rgba(255, 255, 255, 0.05);
-            margin-bottom: 15px; padding: 20px; border-radius: 20px;
+            margin-bottom: 15px; padding: 20px; border-radius: 22px;
             display: flex; align-items: center; cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.1); transition: 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease; /* Плавность движения */
         }
-        .menu-card:active { transform: scale(0.95); }
-        .menu-card .icon { font-size: 35px; margin-right: 15px; }
 
-        /* [CSS: ФОРМЫ] Поля ввода и выпадающие списки */
-        h2 { text-align: center; margin: 0 0 20px 0; }
+        /* Эффект при наведении/нажатии на карточку */
+        .menu-card:hover {
+            transform: translateY(-5px); /* Всплытие вверх */
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(56, 189, 248, 0.4);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .menu-card:active {
+            transform: scale(0.96); /* Эффект нажатия */
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .menu-card .icon { font-size: 35px; margin-right: 15px; transition: transform 0.3s ease; }
+        .menu-card:hover .icon { transform: rotate(10deg) scale(1.1); }
+
+        /* [CSS: ПОЛЯ ВВОДА] */
+        h2 { text-align: center; margin: 0 0 20px 0; letter-spacing: 1px; }
         .form-group { width: 100%; margin-bottom: 12px; display: flex; flex-direction: column; }
         label { font-size: 12px; color: #94a3b8; margin-bottom: 5px; margin-left: 5px; }
         input, select { 
-            width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); 
+            width: 100%; padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); 
             background: rgba(15, 23, 42, 0.8); color: white; font-size: 16px; box-sizing: border-box;
+            outline: none; transition: 0.3s;
         }
+        input:focus { border-color: #38bdf8; box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2); }
 
-        /* [CSS: КНОПКИ] Стили кнопок действий и навигации */
-        .btn-main { width: 100%; padding: 16px; border-radius: 12px; border: none; color: white; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; }
-        .btn-barber { background: linear-gradient(90deg, #0284c7, #38bdf8); }
-        .btn-nails { background: linear-gradient(90deg, #db2777, #f472b6); }
-        .btn-back { background: none; color: #94a3b8; font-size: 13px; margin-top: 10px; cursor: pointer; }
+        /* [CSS: КНОПКИ] */
+        .btn-main { width: 100%; padding: 16px; border-radius: 14px; border: none; color: white; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .btn-barber { background: linear-gradient(90deg, #0284c7, #38bdf8); box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3); }
+        .btn-nails { background: linear-gradient(90deg, #db2777, #f472b6); box-shadow: 0 4px 15px rgba(219, 39, 119, 0.3); }
+        
+        .btn-main:active { transform: scale(0.98); opacity: 0.9; }
 
-        /* [CSS: СТАТУС] Окно с информацией о текущей записи */
-        .status-msg { font-size: 13px; text-align: center; color: #fbbf24; background: rgba(251, 191, 36, 0.1); padding: 10px; border-radius: 10px; margin-bottom: 15px; width: 100%; box-sizing: border-box; }
+        /* [НОВАЯ КРАСИВАЯ КНОПКА НАЗАД] */
+        .btn-back-styled {
+            display: flex; align-items: center; justify-content: center;
+            width: fit-content; margin: 20px auto 0; padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50px; color: #94a3b8; font-size: 14px;
+            cursor: pointer; transition: 0.3s; backdrop-filter: blur(5px);
+        }
+        .btn-back-styled:hover { background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.3); }
+        .btn-back-styled span { margin-right: 8px; font-size: 18px; }
+
+        .status-msg { font-size: 13px; text-align: center; color: #fbbf24; background: rgba(251, 191, 36, 0.1); padding: 10px; border-radius: 12px; margin-bottom: 20px; width: 100%; box-sizing: border-box; border: 1px solid rgba(251, 191, 36, 0.2); }
     </style>
 </head>
 <body>
 
     <div id="hub-ui" class="container" style="display: flex;">
-        <h2>Выберите сервис</h2>
+        <h2 style="font-weight: 800; font-size: 24px;">Premium Hub</h2>
         <div id="active-booking-status"></div> 
         
         <div class="menu-card" onclick="openSection('barber')">
             <div class="icon">✂️</div>
-            <div class="text"><h3>Barbershop</h3><p>Стрижки и борода</p></div>
+            <div class="text"><h3>Barbershop</h3><p>Стрижки, борода и стиль</p></div>
         </div>
 
         <div class="menu-card" onclick="openSection('nails')">
             <div class="icon">💅</div>
-            <div class="text"><h3>Manicure</h3><p>Уход и покрытие</p></div>
+            <div class="text"><h3>Manicure</h3><p>Профессиональный уход</p></div>
         </div>
     </div>
 
     <div id="barber-ui" class="container">
         <h2 style="color: #38bdf8;">Barbershop</h2>
-        <div class="form-group"><label>Телефон</label><input type="tel" id="b-phone" value="8 7"></div>
-        <div class="form-group"><label>Услуга</label>
+        <div class="form-group"><label>Ваш телефон</label><input type="tel" id="b-phone" value="8 7"></div>
+        <div class="form-group"><label>Выберите услугу</label>
             <select id="b-service">
                 <option>Мужская стрижка — 4 000 ₸</option>
                 <option>Стрижка бороды — 2 500 ₸</option>
@@ -92,13 +121,13 @@
         </div>
         <div class="form-group"><label>Дата и время</label><input type="datetime-local" id="b-date"></div>
         <button class="btn-main btn-barber" onclick="sendBooking('Barber')">ЗАПИСАТЬСЯ</button>
-        <button class="btn-back" onclick="goBack()">← Вернуться к выбору</button>
+        <div class="btn-back-styled" onclick="goBack()"><span>←</span> Вернуться назад</div>
     </div>
 
     <div id="nails-ui" class="container">
         <h2 style="color: #f472b6;">Manicure</h2>
-        <div class="form-group"><label>Телефон</label><input type="tel" id="n-phone" value="8 7"></div>
-        <div class="form-group"><label>Услуга</label>
+        <div class="form-group"><label>Ваш телефон</label><input type="tel" id="n-phone" value="8 7"></div>
+        <div class="form-group"><label>Выберите услугу</label>
             <select id="n-service">
                 <option>Маникюр + Гель — 5 000 ₸</option>
                 <option>Наращивание — 8 000 ₸</option>
@@ -107,127 +136,119 @@
         </div>
         <div class="form-group"><label>Дата и время</label><input type="datetime-local" id="n-date"></div>
         <button class="btn-main btn-nails" onclick="sendBooking('Manicure')">ЗАПИСАТЬСЯ</button>
-        <button class="btn-back" onclick="goBack()">← Вернуться к выбору</button>
+        <div class="btn-back-styled" onclick="goBack()"><span>←</span> Вернуться назад</div>
     </div>
 
     <div id="admin-ui" class="container">
-        <h2>Мастер <span style="font-size: 10px; background: orange; padding: 2px 5px; border-radius: 5px; color: black;">ADMIN</span></h2>
-        <div class="form-group"><label>ID клиента (из уведомления)</label><input type="text" id="reply-id"></div>
-        <div class="form-group"><label>Ваш ответ</label><input type="text" id="reply-text" placeholder="Напишите клиенту..."></div>
-        <button class="btn-main" style="background: #10b981;" onclick="sendReply()">ОТПРАВИТЬ ОТВЕТ</button>
+        <h2>Мастер <span style="font-size: 11px; background: #f59e0b; padding: 3px 7px; border-radius: 6px; color: #000; font-weight: bold;">ADMIN</span></h2>
+        <div class="form-group"><label>ID клиента</label><input type="text" id="reply-id"></div>
+        <div class="form-group"><label>Текст сообщения</label><input type="text" id="reply-text"></div>
+        <button class="btn-main" style="background: #10b981;" onclick="sendReply()">ОТПРАВИТЬ КЛИЕНТУ</button>
     </div>
 
     <script>
-        /* [JS: НАСТРОЙКИ] Токены и права доступа */
         const tg = window.Telegram.WebApp;
         tg.expand();
         const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y";
-        const MAIN_ADMIN = "1384228457"; // Твой ID
+        const MAIN_ADMIN = "1384228457"; 
         const ADMIN_LIST = [MAIN_ADMIN]; 
 
         const userId = String(tg.initDataUnsafe?.user?.id || "000");
         const userName = tg.initDataUnsafe?.user?.first_name || "Гость";
 
-        /* [JS: СТАТУС ЗАПИСИ] Функция расчета времени до визита */
+        // Показ статуса записи
         function checkStatus() {
             const lastBooking = JSON.parse(localStorage.getItem(`activeBooking_${userId}`));
             if (lastBooking) {
                 const now = new Date();
                 const bookDate = new Date(lastBooking.date);
                 const diffMs = bookDate - now;
-
                 if (diffMs > 0) {
                     const hours = Math.floor(diffMs / 3600000);
                     const mins = Math.floor((diffMs % 3600000) / 60000);
                     document.getElementById('active-booking-status').innerHTML = `
                         <div class="status-msg">
-                            ⏳ У вас есть активная запись!<br>
-                            <b>${lastBooking.type}: ${lastBooking.service}</b><br>
-                            Осталось времени: ${hours}ч ${mins}мин
+                            ⏳ <b>Ваш визит скоро!</b><br>
+                            ${lastBooking.type}: ${lastBooking.service}<br>
+                            Осталось: ${hours}ч ${mins}мин
                         </div>`;
                 }
             }
         }
         checkStatus();
 
-        /* [JS: НАВИГАЦИЯ] Функции переключения экранов */
+        // Навигация
         function openSection(type) {
-            document.getElementById('hub-ui').style.display = 'none';
-            if (type === 'barber') document.getElementById('barber-ui').style.display = 'flex';
-            if (type === 'nails') document.getElementById('nails-ui').style.display = 'flex';
-        }
-        function goBack() {
-            document.getElementById('barber-ui').style.display = 'none';
-            document.getElementById('nails-ui').style.display = 'none';
-            document.getElementById('hub-ui').style.display = 'flex';
+            const hub = document.getElementById('hub-ui');
+            hub.style.opacity = '0';
+            setTimeout(() => {
+                hub.style.display = 'none';
+                const next = (type === 'barber') ? document.getElementById('barber-ui') : document.getElementById('nails-ui');
+                next.style.display = 'flex';
+                setTimeout(() => { next.style.opacity = '1'; }, 50);
+            }, 300);
         }
 
-        // Проверка: админ зашел или клиент
+        function goBack() {
+            const current = document.querySelector('.container[style*="display: flex"]');
+            current.style.opacity = '0';
+            setTimeout(() => {
+                current.style.display = 'none';
+                const hub = document.getElementById('hub-ui');
+                hub.style.display = 'flex';
+                setTimeout(() => { hub.style.opacity = '1'; }, 50);
+            }, 300);
+        }
+
         if (ADMIN_LIST.includes(userId)) {
             document.getElementById('hub-ui').style.display = 'none';
             document.getElementById('admin-ui').style.display = 'flex';
         }
 
-        /* [JS: ЛОГИКА ЗАПИСИ] Сбор данных и отправка в бот */
+        // Отправка записи
         async function sendBooking(category) {
             const prefix = category === 'Barber' ? 'b-' : 'n-';
             const phone = document.getElementById(prefix + 'phone').value.replace(/\D/g, '');
             const service = document.getElementById(prefix + 'service').value;
             const dateInput = document.getElementById(prefix + 'date').value;
 
-            if (phone.length < 11 || !dateInput) return alert("Пожалуйста, укажите телефон и время визита!");
+            if (phone.length < 11 || !dateInput) return alert("Заполните данные!");
 
-            // [ОГРАНИЧЕНИЕ ОТКЛЮЧЕНО ПО ПРОСЬБЕ ПОЛЬЗОВАТЕЛЯ]
-            // Раньше здесь была проверка на 30 минут.
-
-            // Сохраняем информацию для таймера на главном экране
             localStorage.setItem(`activeBooking_${userId}`, JSON.stringify({ type: category, service: service, date: dateInput }));
 
             const waLink = `https://wa.me/7${phone.substring(1)}`;
-            const adminMsg = `🚀 <b>НОВАЯ ЗАПИСЬ [${category.toUpperCase()}]</b>\n━━━━━━━━━━━━━\n👤 <b>Клиент:</b> ${userName}\n📞 <b>Тел:</b> ${phone}\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${dateInput.replace('T', ' ')}\n━━━━━━━━━━━━━\n🔔 <b>НАПОМНИТЬ ЗА 30 МИНУТ!</b>\n━━━━━━━━━━━━━\n💬 <a href="${waLink}">Написать в WhatsApp</a>\n🆔 <b>ID:</b> <code>${userId}</code>`;
-            
-            const clientMsg = `✅ <b>ВЫ УСПЕШНО ЗАПИСАНЫ!</b>\n\n📍 Категория: ${category}\n✂️ Услуга: ${service}\n📅 Время: ${dateInput.replace('T', ' ')}\n\n🔔 <b>Бот отправит вам напоминание за 30 минут до начала визита!</b>`;
+            const adminMsg = `🚀 <b>НОВАЯ ЗАПИСЬ [${category.toUpperCase()}]</b>\n━━━━━━━━━━━━━\n👤 <b>Клиент:</b> ${userName}\n📞 <b>Тел:</b> ${phone}\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${dateInput.replace('T', ' ')}\n━━━━━━━━━━━━━\n🆔 <b>ID:</b> <code>${userId}</code>\n💬 <a href="${waLink}">Написать в WhatsApp</a>`;
+            const clientMsg = `✅ <b>ВЫ ЗАПИСАНЫ!</b>\n\n📍 ${category}\n✂️ ${service}\n📅 ${dateInput.replace('T', ' ')}\n\n🔔 Бот напомнит вам за 30 минут!`;
 
             try {
-                // Отправка мастеру
                 for (let id of ADMIN_LIST) {
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ chat_id: id, text: adminMsg, parse_mode: 'HTML', disable_web_page_preview: true })
                     });
                 }
-                // Отправка клиенту (подтверждение)
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: userId, text: clientMsg, parse_mode: 'HTML' })
                 });
-                tg.showAlert("Готово! Запись подтверждена.");
+                tg.showAlert("Запись успешно создана!");
                 tg.close();
-            } catch (e) { alert("Ошибка при отправке данных бота."); }
+            } catch (e) { alert("Ошибка!"); }
         }
 
-        /* [JS: ОТВЕТ АДМИНА] Функция обратной связи с клиентом */
+        // Ответ админа
         async function sendReply() {
             const cid = document.getElementById('reply-id').value.trim();
             const msg = document.getElementById('reply-text').value.trim();
-            if (!cid || !msg) return alert("Укажите корректный ID и введите текст сообщения!");
-
+            if (!cid || !msg) return alert("Заполни поля!");
             try {
                 await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ chat_id: cid, text: `<b>✉️ Сообщение от мастера:</b>\n\n${msg}`, parse_mode: 'HTML' })
                 });
-                
-                // Копия главному админу для контроля помощников
-                if (userId !== MAIN_ADMIN) {
-                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ chat_id: MAIN_ADMIN, text: `<b>👁 Контроль:</b> ${userName} ответил клиенту ${cid}:\n"${msg}"`, parse_mode: 'HTML' })
-                    });
-                }
-                alert("Сообщение успешно отправлено клиенту!");
+                alert("Отправлено!");
                 document.getElementById('reply-text').value = "";
-            } catch (e) { alert("Ошибка при отправке ответа."); }
+            } catch (e) { alert("Ошибка!"); }
         }
     </script>
 </body>
