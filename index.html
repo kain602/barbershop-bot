@@ -3,25 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BarberShop Control System</title>
+    <title>Beauty Hub Premium</title>
+    
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <style>
-        /* [CSS] Живые обои и анимация градиента */
+        /* [БЛОК: ЖИВЫЕ ОБОИ] Анимированный фон для всего приложения */
         body { 
             font-family: 'Segoe UI', Roboto, sans-serif; 
             background: linear-gradient(45deg, #0f172a, #1e293b, #0f172a, #1e3a8a);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
             color: #f8fafc; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center;
-            padding: 20px; 
-            min-height: 100vh;
-            margin: 0;
-            overflow: hidden;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px; min-height: 100vh; margin: 0; overflow: hidden;
         }
 
         @keyframes gradientBG {
@@ -30,168 +25,214 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* [CSS] Стеклянная карточка и выравнивание */
+        /* [БЛОК: ДЕКОР] Плавающие сферы на фоне */
+        .bg-sphere { position: fixed; border-radius: 50%; filter: blur(80px); z-index: -1; opacity: 0.4; animation: float 12s infinite alternate ease-in-out; }
+        .sphere-1 { width: 300px; height: 300px; background: #38bdf8; top: -50px; right: -50px; }
+        .sphere-2 { width: 250px; height: 250px; background: #f472b6; bottom: -50px; left: -50px; animation-delay: -3s; }
+
+        @keyframes float { 0% { transform: translate(0, 0); } 100% { transform: translate(40px, 60px); } }
+
+        /* [БЛОК: КАРТОЧКИ] Общий стиль для всех контейнеров */
         .container { 
-            background: rgba(30, 41, 59, 0.65); 
-            backdrop-filter: blur(15px);
-            padding: 30px; 
-            border-radius: 28px; 
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); 
-            width: 100%; 
-            max-width: 360px; 
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-sizing: border-box;
-            display: none; 
-            flex-direction: column;
-            align-items: center;
+            background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(15px);
+            padding: 25px; border-radius: 28px; width: 100%; max-width: 360px; 
+            border: 1px solid rgba(255, 255, 255, 0.1); box-sizing: border-box;
+            display: none; flex-direction: column; align-items: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        h2 { text-align: center; color: #38bdf8; margin: 0 0 25px 0; font-weight: 700; width: 100%; }
+        /* [БЛОК: МЕНЮ ВЫБОРА] Стили для двух главных кнопок в начале */
+        .menu-card {
+            width: 100%; background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 15px; padding: 20px; border-radius: 20px;
+            display: flex; align-items: center; cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1); transition: 0.3s;
+        }
+        .menu-card:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.1); }
+        .menu-card .icon { font-size: 40px; margin-right: 20px; }
+        .menu-card .text h3 { margin: 0; color: #fff; }
+        .menu-card .text p { margin: 5px 0 0 0; font-size: 13px; color: #94a3b8; }
+
+        /* [БЛОК: ПОЛЯ ВВОДА] */
+        h2 { text-align: center; color: #fff; margin: 0 0 20px 0; }
         .form-group { width: 100%; margin-bottom: 15px; display: flex; flex-direction: column; }
-        label { font-size: 13px; color: #94a3b8; margin-bottom: 8px; margin-left: 5px; }
-        
-        select, input { 
-            width: 100%; padding: 14px 16px; border-radius: 12px; 
-            border: 1px solid rgba(255,255,255,0.1); background: rgba(15, 23, 42, 0.8); 
-            color: white; font-size: 16px; box-sizing: border-box;
+        label { font-size: 12px; color: #94a3b8; margin-bottom: 6px; margin-left: 5px; }
+        input, select { 
+            width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); 
+            background: rgba(15, 23, 42, 0.8); color: white; font-size: 16px; box-sizing: border-box;
         }
 
-        button { 
-            width: 100%; padding: 16px; margin-top: 15px; border-radius: 12px; border: none; 
-            background: linear-gradient(90deg, #0284c7 0%, #38bdf8 100%); 
+        /* [БЛОК: КНОПКИ] */
+        .btn-main { 
+            width: 100%; padding: 16px; margin-top: 10px; border-radius: 12px; border: none; 
             color: white; font-size: 16px; font-weight: 700; cursor: pointer;
         }
-
+        .btn-barber { background: linear-gradient(90deg, #0284c7, #38bdf8); }
+        .btn-nails { background: linear-gradient(90deg, #db2777, #f472b6); }
+        
+        .btn-back { background: none; border: 1px solid rgba(255,255,255,0.2); color: #94a3b8; margin-top: 15px; padding: 10px; font-size: 14px; }
+        
         .admin-badge { background: #f59e0b; color: #000; padding: 3px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; }
     </style>
 </head>
 <body>
 
-    <div id="client-ui" class="container">
-        <h2>Premium Barber</h2>
+    <div class="bg-sphere sphere-1"></div>
+    <div class="bg-sphere sphere-2"></div>
+
+    <div id="hub-ui" class="container" style="display: flex;">
+        <h2>Выберите сервис</h2>
+        
+        <div class="menu-card" onclick="openSection('barber')">
+            <div class="icon">✂️</div>
+            <div class="text">
+                <h3>Barbershop</h3>
+                <p>Стрижки, борода, стиль</p>
+            </div>
+        </div>
+
+        <div class="menu-card" onclick="openSection('nails')">
+            <div class="icon">💅</div>
+            <div class="text">
+                <h3>Manicure</h3>
+                <p>Маникюр, гель-лак, уход</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="barber-ui" class="container">
+        <h2 style="color: #38bdf8;">Barbershop</h2>
         <div class="form-group">
-            <label>Ваш номер телефона</label>
-            <input type="tel" id="phone" value="8 7" maxlength="15">
+            <label>Телефон</label>
+            <input type="tel" id="b-phone" value="8 7">
         </div>
         <div class="form-group">
-            <label>Выберите услугу</label>
-            <select id="service">
-                <option value="Мужская стрижка (4000 ₸)">Мужская стрижка — 4 000 ₸</option>
-                <option value="Стрижка бороды (2500 ₸)">Стрижка бороды — 2 500 ₸</option>
-                <option value="Комплекс (6000 ₸)">Комплекс — 6 000 ₸</option>
+            <label>Услуга</label>
+            <select id="b-service">
+                <option>Мужская стрижка — 4 000 ₸</option>
+                <option>Стрижка бороды — 2 500 ₸</option>
+                <option>Комплекс — 6 000 ₸</option>
             </select>
         </div>
         <div class="form-group">
-            <label>Дата и время визита</label>
-            <input type="datetime-local" id="datetime">
+            <label>Дата и время</label>
+            <input type="datetime-local" id="b-date">
         </div>
-        <button onclick="sendOrder()">ЗАПИСАТЬСЯ</button>
+        <button class="btn-main btn-barber" onclick="sendBooking('Barber')">ЗАПИСАТЬСЯ</button>
+        <button class="btn-main btn-back" onclick="goBack()">← НАЗАД</button>
+    </div>
+
+    <div id="nails-ui" class="container">
+        <h2 style="color: #f472b6;">Manicure</h2>
+        <div class="form-group">
+            <label>Телефон</label>
+            <input type="tel" id="n-phone" value="8 7">
+        </div>
+        <div class="form-group">
+            <label>Услуга</label>
+            <select id="n-service">
+                <option>Маникюр + Гель-лак — 5 000 ₸</option>
+                <option>Наращивание — 8 000 ₸</option>
+                <option>Снятие + Уход — 2 000 ₸</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Дата и время</label>
+            <input type="datetime-local" id="n-date">
+        </div>
+        <button class="btn-main btn-nails" onclick="sendBooking('Manicure')">ЗАПИСАТЬСЯ</button>
+        <button class="btn-main btn-back" onclick="goBack()">← НАЗАД</button>
     </div>
 
     <div id="admin-ui" class="container">
         <h2>Мастер <span class="admin-badge">Admin</span></h2>
-        <p id="admin-greeting" style="text-align: center; color: #38bdf8;"></p>
         <div class="form-group">
             <label>ID клиента</label>
-            <input type="text" id="reply-id" placeholder="Вставь ID">
+            <input type="text" id="reply-id">
         </div>
         <div class="form-group">
-            <label>Текст ответа</label>
-            <input type="text" id="reply-text" placeholder="Ваше сообщение">
+            <label>Сообщение</label>
+            <input type="text" id="reply-text">
         </div>
-        <button style="background: #10b981;" onclick="sendReply()">ОТПРАВИТЬ ОТВЕТ</button>
+        <button class="btn-main" style="background: #10b981;" onclick="sendReply()">ОТВЕТИТЬ</button>
     </div>
 
     <script>
-        /* [JS] Логика администрирования */
+        /* [JS: КОНФИГ] Основные настройки */
         const tg = window.Telegram.WebApp;
         tg.expand();
 
         const BOT_TOKEN = "8424249026:AAHGygnDhf0-rbcJ8do6PwDjWfl3733q26Y";
-        
-        // ГЛАВНЫЙ АДМИН (Получает все копии ответов)
         const MAIN_ADMIN = "1384228457"; 
-        
-        // Список всех админов (включая главного)
-        const ADMIN_LIST = [MAIN_ADMIN, ]; 
+        const ADMIN_LIST = [MAIN_ADMIN]; 
 
-        const user = tg.initDataUnsafe?.user;
-        const userId = String(user?.id);
-        const userName = user?.first_name || "Гость";
+        const userId = String(tg.initDataUnsafe?.user?.id);
+        const userName = tg.initDataUnsafe?.user?.first_name || "Гость";
 
-        function showUI() {
-            const clientCard = document.getElementById('client-ui');
-            const adminCard = document.getElementById('admin-ui');
-            if (ADMIN_LIST.includes(userId)) {
-                adminCard.style.display = 'flex';
-                clientCard.remove();
-                document.getElementById('admin-greeting').innerText = `Админ: ${userName} ${userId === MAIN_ADMIN ? '(Главный)' : ''}`;
-            } else {
-                clientCard.style.display = 'flex';
-                adminCard.remove();
-            }
+        /* [JS: НАВИГАЦИЯ] Переключение между экранами */
+        function openSection(type) {
+            document.getElementById('hub-ui').style.display = 'none';
+            if (type === 'barber') document.getElementById('barber-ui').style.display = 'flex';
+            if (type === 'nails') document.getElementById('nails-ui').style.display = 'flex';
         }
-        showUI();
 
-        /* [JS] Отправка записи (как на 2 скрине) */
-        async function sendOrder() {
-            const rawPhone = document.getElementById('phone').value.replace(/\D/g, '');
-            const service = document.getElementById('service').value;
-            const datetime = document.getElementById('datetime').value;
+        function goBack() {
+            document.getElementById('barber-ui').style.display = 'none';
+            document.getElementById('nails-ui').style.display = 'none';
+            document.getElementById('hub-ui').style.display = 'flex';
+        }
 
-            if (rawPhone.length < 11 || !datetime) return alert("Заполните всё!");
+        // Если админ - сразу открываем админку
+        if (ADMIN_LIST.includes(userId)) {
+            document.getElementById('hub-ui').style.display = 'none';
+            document.getElementById('admin-ui').style.display = 'flex';
+        }
 
-            const waLink = `https://wa.me/7${rawPhone.substring(1)}`;
-            const adminText = `🚀 <b>НОВАЯ ЗАПИСЬ (KZ)</b>\n━━━━━━━━━━━━━\n👤 <b>Клиент:</b> ${userName}\n📞 <b>Тел:</b> ${rawPhone}\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${datetime.replace('T', ' ')}\n━━━━━━━━━━━━━\n🔔 <b>НУЖНО НАПОМИНАНИЕ ЗА 30 МИН!</b>\n━━━━━━━━━━━━━\n💬 <a href="${waLink}">Написать в WhatsApp</a>\n🆔 <b>ID:</b> <code>${userId}</code>`;
-            const clientText = `✅ <b>ВЫ ЗАПИСАНЫ!</b>\n\n✂️ Услуга: ${service}\n📅 Время: ${datetime.replace('T', ' ')}\n\n🔔 <b>Бот напомнит вам о записи за 30 минут до начала!</b>`;
+        /* [JS: ОТПРАВКА] Общая функция записи */
+        async function sendBooking(category) {
+            const prefix = category === 'Barber' ? 'b-' : 'n-';
+            const phone = document.getElementById(prefix + 'phone').value.replace(/\D/g, '');
+            const service = document.getElementById(prefix + 'service').value;
+            const date = document.getElementById(prefix + 'date').value;
 
+            if (phone.length < 11 || !date) return alert("Заполните всё!");
+
+            // Лимит 30 минут (кроме тебя)
+            if (userId !== MAIN_ADMIN) {
+                const last = localStorage.getItem('lastOrder');
+                if (last && (Date.now() - last < 1800000)) return alert("Запись возможна раз в 30 минут!");
+                localStorage.setItem('lastOrder', Date.now());
+            }
+
+            const adminMsg = `🚀 <b>НОВАЯ ЗАПИСЬ [${category.toUpperCase()}]</b>\n━━━━━━━━━━━━━\n👤 <b>Клиент:</b> ${userName}\n📞 <b>Тел:</b> ${phone}\n✂️ <b>Услуга:</b> ${service}\n📅 <b>Время:</b> ${date.replace('T', ' ')}\n🆔 <b>ID:</b> <code>${userId}</code>`;
+            
             try {
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: userId, text: clientText, parse_mode: 'HTML' })
-                });
-
+                // Мастеру
                 for (let id of ADMIN_LIST) {
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ chat_id: id, text: adminText, parse_mode: 'HTML', disable_web_page_preview: true })
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ chat_id: id, text: adminMsg, parse_mode: 'HTML' })
                     });
                 }
+                // Клиенту
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chat_id: userId, text: `✅ Вы успешно записаны на <b>${category}</b>!`, parse_mode: 'HTML' })
+                });
                 tg.close();
             } catch (e) { alert("Ошибка!"); }
         }
 
-        /* [JS] Функция ответа с контролем для главного админа */
+        /* [JS: ОТВЕТ] */
         async function sendReply() {
-            const cid = document.getElementById('reply-id').value.trim();
-            const msg = document.getElementById('reply-text').value.trim();
-            if (!cid || !msg) return alert("Заполни поля!");
-
-            try {
-                // 1. Отправка клиенту
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chat_id: cid, text: `<b>✉️ Ответ от мастера:</b>\n\n${msg}`, parse_mode: 'HTML' })
-                });
-
-                // 2. ОТПРАВКА КОПИИ ГЛАВНОМУ АДМИНУ (если ответил другой админ)
-                if (userId !== MAIN_ADMIN) {
-                    const controlMsg = `<b>👁 КОНТРОЛЬ ОТВЕТА</b>\n━━━━━━━━━━━━━\n👤 <b>Ответил:</b> ${userName} (ID: ${userId})\n👤 <b>Кому:</b> ID ${cid}\n💬 <b>Текст:</b> ${msg}`;
-                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ chat_id: MAIN_ADMIN, text: controlMsg, parse_mode: 'HTML' })
-                    });
-                }
-
-                alert("Ответ отправлен клиенту!");
-                document.getElementById('reply-text').value = "";
-            } catch (e) { alert("Ошибка при отправке!"); }
+            const cid = document.getElementById('reply-id').value;
+            const msg = document.getElementById('reply-text').value;
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: cid, text: `<b>✉️ Ответ:</b> ${msg}`, parse_mode: 'HTML' })
+            });
+            alert("Отправлено!");
         }
     </script>
 </body>
 </html>
-
